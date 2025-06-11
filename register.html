@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Studentfainace - Register</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .register-container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e7e34;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.firebasestorage.app",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  function registerUser() {
+    const name = document.getElementById('regName').value;
+    const age = document.getElementById('regAge').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+
+    if (!name || !age || !email || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user;
+        // Optionally, save additional user info to Firestore
+        firebase.firestore().collection("users").doc(user.uid).set({
+          name: name,
+          age: age,
+          email: email
+        });
+        alert("Registration successful! Please check your email for verification.");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  }
+</script>
+</head>
+<body>
+  <div class="register-container">
+    <h2>Register</h2>
+    <input type="text" id="regName" placeholder="Full Name">
+    <input type="number" id="regAge" placeholder="Age">
+    <input type="email" id="regEmail" placeholder="Email">
+    <input type="password" id="regPassword" placeholder="Password">
+    <button onclick="registerUser()">Register</button>
+    <p>Already have an account? <a href="log.html">Login here</a></p>
+  </div>
+</body>
+</html>

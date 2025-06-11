@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard - Profile & Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: #f0f2f5;
+      padding: 20px;
+    }
+    .nav {
+      background: #4a90e2;
+      padding: 15px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+    }
+    .nav button {
+      background: white;
+      color: #4a90e2;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .nav button:hover {
+      background: #dfefff;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      display: none;
+    }
+    .card.active {
+      display: block;
+    }
+    .card h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .profile-pic {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .profile-pic img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #4a90e2;
+    }
+    .profile-pic input {
+      margin-top: 10px;
+    }
+    .info-group label {
+      font-weight: 500;
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .info-group input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+    .btn {
+      background-color: #4a90e2;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: block;
+      width: 100%;
+    }
+    .btn:hover {
+      background-color: #357ABD;
+    }
+    .settings-section {
+      display: none;
+      margin-top: 15px;
+    }
+    .settings-section.active {
+      display: block;
+    }
+    .danger {
+      background: #e74c3c;
+    }
+    .danger:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <h1>Dashboard</h1>
+    <div>
+      <button onclick="showPage('profile')">Profile</button>
+      <button onclick="showPage('settings')">Account Settings</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Profile Page -->
+    <div class="card active" id="profileCard">
+      <h2>Profile Information</h2>
+      <div class="profile-pic">
+        <img id="profileImage" src="https://via.placeholder.com/120" alt="Profile Picture">
+        <input type="file" id="uploadPic" />
+      </div>
+      <div class="info-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName">
+
+        <label>Username</label>
+        <input type="text" id="username">
+
+        <label>Email Address</label>
+        <input type="email" id="email">
+
+        <label>Phone Number</label>
+        <input type="tel" id="phone">
+
+        <label>Date of Birth</label>
+        <input type="date" id="dob">
+
+        <label>Gender</label>
+        <select id="gender">
+          <option value="">Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label>Location</label>
+        <input type="text" id="location">
+      </div>
+      <button class="btn" onclick="saveProfile()">Save Profile</button>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="card" id="settingsCard">
+      <h2>⚙ Account Settings</h2>
+
+      <button class="btn" onclick="toggleSection('editProfileSection')">Edit Profile</button>
+      <div class="settings-section" id="editProfileSection">
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" placeholder="New Password">
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password">
+
+        <label for="notifications">Notification Preferences</label>
+        <select id="notifications">
+          <option>Email Only</option>
+          <option>SMS Only</option>
+          <option>Both</option>
+          <option>None</option>
+        </select>
+
+        <label for="privacy">Privacy Settings</label>
+        <select id="privacy">
+          <option>Public</option>
+          <option>Friends Only</option>
+          <option>Private</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="toggleSection('feedbackSection')">Submit Feedback</button>
+      <div class="settings-section" id="feedbackSection">
+        <label for="feedback">Your Feedback</label>
+        <textarea id="feedback" rows="5" placeholder="Write your feedback here..."></textarea>
+        <button class="btn" onclick="submitFeedback()">Send Feedback</button>
+      </div>
+
+      <button class="btn danger" onclick="deleteAccount()">Delete My Account</button>
+    </div>
+  </div>
+
+  <script>
+    function showPage(page) {
+      document.getElementById('profileCard').classList.remove('active');
+      document.getElementById('settingsCard').classList.remove('active');
+      if (page === 'profile') {
+        document.getElementById('profileCard').classList.add('active');
+      } else {
+        document.getElementById('settingsCard').classList.add('active');
+      }
+    }
+
+    function toggleSection(id) {
+      const section = document.getElementById(id);
+      section.classList.toggle('active');
+    }
+
+    function submitFeedback() {
+      const feedback = document.getElementById('feedback').value;
+      if (feedback.trim()) {
+        alert('Feedback submitted: ' + feedback);
+        document.getElementById('feedback').value = '';
+      } else {
+        alert('Please write something before submitting.');
+      }
+    }
+
+    document.getElementById('uploadPic').addEventListener('change', function(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('profileImage').src = reader.result;
+        localStorage.setItem('profileImage', reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    });
+
+    function saveProfile() {
+      const fields = ['fullName', 'username', 'email', 'phone', 'dob', 'gender', 'location'];
+      fields.forEach(field => {
+        localStorage.setItem(field, document.getElementById(field).value);
+      });
+      alert('Profile saved!');
+    }
+
+    function deleteAccount() {
+      if (confirm('Are you sure you want to delete your account?')) {
+        localStorage.clear();
+        alert('Account deleted.');
+        location.reload();
+      }
+    }
+
+    window.onload = function() {
+      const fields = ['fullName', 'username', 'email', 'phone', 'dob', 'gender', 'location'];
+      fields.forEach(field => {
+        if (localStorage.getItem(field)) {
+          document.getElementById(field).value = localStorage.getItem(field);
+        }
+      });
+      if (localStorage.getItem('profileImage')) {
+        document.getElementById('profileImage').src = localStorage.getItem('profileImage');
+      }
+    }
+  </script>
+</body>
+</html>

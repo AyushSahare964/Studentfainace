@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Personal Finance Tracker - Statistics</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f4f8;
+      text-align: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #34495e;
+      margin-top: 40px;
+      font-size: 2rem;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: 30px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    @media (max-width: 600px) {
+      .chart-container {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Header -->
+<header class="bg-indigo-600 text-white py-5 shadow-md">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">📊 Spending Statistics</h1>
+    <a href="index.html" class="text-white hover:underline">← Back to Home</a>
+  </div>
+</header>
+
+<h1>Self Finance Tracker 💸</h1>
+
+<h2>Today's Spending Breakdown</h2>
+
+<div class="chart-container">
+  <canvas id="expense-chart"></canvas>
+</div>
+
+<script>
+  const ctx = document.getElementById('expense-chart').getContext('2d');
+
+  let expenses = {};
+
+  function loadExpensesFromDailyLimit() {
+    const spends = JSON.parse(localStorage.getItem('dailySpent')) || [];
+
+    spends.forEach(spend => {
+      if (expenses[spend.category]) {
+        expenses[spend.category] += spend.amount;
+      } else {
+        expenses[spend.category] = spend.amount;
+      }
+    });
+  }
+
+  function createPieChart() {
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(expenses),
+        datasets: [{
+          label: 'Expenses',
+          data: Object.values(expenses),
+          backgroundColor: [
+            '#ff6b6b', '#4ecdc4', '#1a535c', '#ffe66d', '#ff9f1c', '#6a0572', '#00b894'
+          ],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#333',
+              font: {
+                size: 14
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  window.onload = function() {
+    loadExpensesFromDailyLimit();
+    createPieChart();
+  }
+</script>
+
+</body>
+</html>

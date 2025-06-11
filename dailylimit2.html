@@ -107,37 +107,20 @@
 
   <!-- JavaScript -->
   <script>
-    // Initialize Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
-      authDomain: "self-finance-13029.firebaseapp.com",
-      projectId: "self-finance-13029",
-      storageBucket: "self-finance-13029.appspot.com",
-      messagingSenderId: "233384300457",
-      appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
-      measurementId: "G-QT3K94SFZ3"
-    };
-    firebase.initializeApp(firebaseConfig);
+       // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.firebasestorage.app",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+firebase.initializeApp(firebaseConfig);
 
-    const storage = firebase.storage();0
+const storage = firebase.storage();
 
-    function uploadDailyLimit(userId, dailyLimit) {
-      const dailyLimitData = {
-        limit: dailyLimit,
-        timestamp: new Date().toISOString()
-      };
-
-      const jsonString = JSON.stringify(dailyLimitData);
-      const storageRef = storage.ref(`daily_limits/${userId}/limit.json`);
-
-      storageRef.putString(jsonString, 'raw', { contentType: 'application/json' })
-        .then((snapshot) => {
-          console.log('Daily limit uploaded successfully!', snapshot);
-        })
-        .catch((error) => {
-          console.error('Error uploading daily limit:', error);
-        });
-    }
 
     function setDailyLimit() {
       const limitInput = parseFloat(document.getElementById('dailyLimitInput').value);
@@ -152,9 +135,6 @@
       showDailyLimit();
       updateRemainingBalance();
       renderSpendList();
-      // Example: Replace with actual user ID logic
-      const userId = "user123";
-      uploadDailyLimit(userId, limitInput);
       alert("✅ Daily limit set successfully!");
     }
 
@@ -173,15 +153,13 @@
 
       updateRemainingBalance();
       renderSpendList();
-      document.getElementById('expenditure').value = '';
+      document.getElementById('expenditure').value = ''; // Clear input
     }
 
     function showDailyLimit() {
       const limit = localStorage.getItem('dailyLimit');
       if (limit) {
         document.getElementById('currentLimitDisplay').textContent = `✅ Your daily limit is ₹${limit}.`;
-      } else {
-        document.getElementById('currentLimitDisplay').textContent = '';
       }
     }
 
@@ -226,7 +204,6 @@
       updateRemainingBalance();
       renderSpendList();
     };
-  </script>
   </script>
 
 </body>
