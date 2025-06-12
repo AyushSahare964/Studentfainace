@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self Finance Tracker - Login</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts - Poppins for consistency -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    /* Gradient background for the entire body, consistent with other pages */
+    .gradient-bg-body {
+      background: linear-gradient(to right, #e0f2fe, #fce4ec); /* Lighter blue to pink gradient */
+    }
+  </style>
+</head>
+<body class="gradient-bg-body min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white shadow-2xl rounded-xl p-8 sm:p-10 max-w-md w-full text-center space-y-6">
+    <h1 class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-6">
+      Self Finance Tracker
+    </h1>
+    <p class="text-gray-600 text-lg sm:text-xl font-semibold mb-6">Login to your account</p>
+
+    <div id="loginMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4" role="alert">
+      <!-- Login error messages will appear here -->
+    </div>
+
+    <input 
+      type="email" 
+      id="loginEmail" 
+      placeholder="Email Address" 
+      class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-400 transition text-gray-800 text-base"
+      required>
+
+    <input 
+      type="password" 
+      id="loginPassword" 
+      placeholder="Password" 
+      class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-purple-400 transition text-gray-800 text-base"
+      required>
+
+    <button 
+      onclick="loginUser()" 
+      class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold py-3 rounded-lg transition text-lg shadow-lg">
+      Login
+    </button>
+
+    <p class="text-gray-600 mt-4 text-base">
+      Don't have an account? 
+      <a href="register.html" class="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition">Register here</a>
+    </p>
+  </div>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+      authDomain: "self-finance-13029.firebaseapp.com",
+      projectId: "self-finance-13029",
+      storageBucket: "self-finance-13029.firebasestorage.app",
+      messagingSenderId: "233384300457",
+      appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+      measurementId: "G-QT3K94SFZ3"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Get the login message element
+    const loginMessage = document.getElementById('loginMessage');
+    const loginEmailInput = document.getElementById('loginEmail');
+    const loginPasswordInput = document.getElementById('loginPassword');
+
+
+    // Function to display messages (error or info)
+    function showLoginMessage(message, isError = true) {
+      loginMessage.textContent = message;
+      loginMessage.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+      if (isError) {
+        loginMessage.classList.add('bg-red-100', 'text-red-700');
+      } else {
+        loginMessage.classList.add('bg-green-100', 'text-green-700');
+      }
+      loginMessage.classList.remove('hidden');
+      setTimeout(() => {
+        loginMessage.classList.add('hidden'); // Hide message after 5 seconds
+      }, 5000);
+    }
+
+    // Login function for Firebase Authentication
+    function loginUser() {
+      const email = loginEmailInput.value;
+      const password = loginPasswordInput.value;
+
+      if (!email || !password) {
+        showLoginMessage('Please enter both email and password.');
+        return;
+      }
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // Login successful
+          showLoginMessage('Login successful! Redirecting...', false); // false for success message
+          // Redirect to index.html after a short delay to show message
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1500); // Redirect after 1.5 seconds
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          showLoginMessage('Login failed: ' + error.message);
+        });
+    }
+
+    // --- Auto-shift focus from Email to Password ---
+    loginEmailInput.addEventListener('input', () => {
+      const emailValue = loginEmailInput.value;
+      // Simple check for a basic email pattern (contains @ and a dot)
+      // This is not a full validation, just enough to suggest shifting focus
+      if (emailValue.includes('@') && emailValue.includes('.') && emailValue.indexOf('@') < emailValue.lastIndexOf('.')) {
+        loginPasswordInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>

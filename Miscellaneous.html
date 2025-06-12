@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miscellaneous Spends</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    /* Updated gradient-bg to match index.html */
+    .gradient-bg {
+      background: linear-gradient(to right, #4facfe, #00f2fe); /* Blue-ish gradient from index.html */
+    }
+
+    /* Profile Dropdown Styles (copied from previous snippets, ensuring consistency) */
+    .profile-container {
+      position: relative;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%; /* Position below the button */
+      right: 0;
+      background-color: white;
+      border-radius: 0.5rem; /* rounded-lg */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+      width: 150px;
+      overflow: hidden;
+      margin-top: 0.5rem; /* Space between button and dropdown */
+      z-index: 50; /* Ensure it's above other content */
+      display: none; /* Hidden by default */
+    }
+    .profile-dropdown a {
+      display: block;
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      color: #4B5563; /* gray-700 */
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+    .profile-dropdown a:hover {
+      background-color: #F3F4F6; /* gray-100 */
+    }
+    /* Show dropdown on parent hover/focus (for desktop) */
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+    /* For touch devices, consider adding JS to toggle visibility on click */
+
+    /* Initially hide main content until authentication is confirmed */
+    #mainContentWrapper {
+        display: none;
+    }
+
+    /* Card hover effect from index.html */
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800"> <!-- Body background from index.html -->
+
+<!-- Header -->
+<header class="gradient-bg text-white py-5 shadow-md">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">🧾 Miscellaneous Spends</h1>
+    
+    <nav class="flex items-center space-x-4">
+      <!-- This will be shown when user is NOT logged in -->
+      <div id="guest-nav" class="flex space-x-4">
+        <a href="log.html" class="text-white hover:underline text-lg">Login</a>
+        <a href="register.html" class="text-white hover:underline text-lg">Register</a>
+      </div>
+
+      <!-- This will be shown when user is logged in -->
+      <div id="user-nav" class="hidden">
+        <div class="profile-container relative">
+          <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
+            <span id="username-display" class="text-lg">User</span>
+            <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+              <span id="user-initial">U</span>
+            </div>
+          </button>
+          <div class="profile-dropdown">
+            <a href="index.html">🏠 Home</a>
+            <a href="profile.html">👤 My Profile</a>
+            <a href="setting.html">⚙️ Settings</a>
+            <a href="#" id="logout-btn">🚪 Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="container mx-auto px-4 py-10">
+
+  <!-- Authentication Message -->
+  <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-xl mx-auto mb-8 text-center" role="alert" style="display: none;">
+    <strong class="font-bold">Persistent Data Disabled:</strong>
+    <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to save and view your miscellaneous spends.</span>
+  </div>
+
+  <div id="mainContentWrapper">
+    <!-- Input Form -->
+    <div class="bg-white rounded-xl shadow-md p-6 max-w-xl mx-auto mb-8 card"> <!-- Added 'card' class for hover effect -->
+      <h2 class="text-xl font-semibold mb-4 text-indigo-600">Add New Spend</h2>
+      <form id="spendForm" class="space-y-4">
+        <div>
+          <label for="title" class="block font-medium mb-1">Title</label>
+          <input type="text" id="title" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. Coffee with friend" required>
+        </div>
+        <div>
+          <label for="amount" class="block font-medium mb-1">Amount (₹)</label>
+          <input type="number" id="amount" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400" required min="0" step="any">
+        </div>
+        <div>
+          <label for="date" class="block font-medium mb-1">Date</label>
+          <input type="date" id="date" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
+        </div>
+        <button type="submit" id="addSpendBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+          ➕ Add Spend
+        </button>
+      </form>
+    </div>
+
+    <!-- List of Spends -->
+    <div class="bg-white rounded-xl shadow-md p-6 max-w-2xl mx-auto card"> <!-- Added 'card' class for hover effect -->
+      <h2 class="text-xl font-semibold mb-4 text-indigo-600">Spend History</h2>
+      <ul id="spendList" class="space-y-3">
+        <li class="text-gray-500 text-center">Loading spend history...</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<!-- JavaScript -->
+<script>
+  // === IMPORTANT: USE THIS EXACT FIREBASE CONFIGURATION IN ALL YOUR FILES ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.firebasestorage.app",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let userId = null;
+
+  // UI elements
+  const authMessage = document.getElementById('authMessage');
+  const mainContentWrapper = document.getElementById('mainContentWrapper');
+  const spendForm = document.getElementById("spendForm");
+  const titleInput = document.getElementById("title");
+  const amountInput = document.getElementById("amount");
+  const dateInput = document.getElementById("date");
+  const addSpendBtn = document.getElementById("addSpendBtn");
+  const spendList = document.getElementById("spendList");
+
+  // Header elements
+  const guestNav = document.getElementById('guest-nav');
+  const userNav = document.getElementById('user-nav');
+  const usernameDisplay = document.getElementById('username-display');
+  const userInitial = document.getElementById('user-initial');
+  const logoutBtn = document.getElementById('logout-btn');
+  const profileButton = document.getElementById('profile-button');
+
+
+  // Function to enable/disable form elements
+  function setFormState(enabled) {
+    titleInput.disabled = !enabled;
+    amountInput.disabled = !enabled;
+    dateInput.disabled = !enabled;
+    addSpendBtn.disabled = !enabled;
+  }
+
+  // --- Authentication State Listener ---
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      userId = user.uid;
+      console.log("User signed in:", userId);
+      authMessage.style.display = 'none';
+      mainContentWrapper.style.display = 'block';
+      setFormState(true); // Enable form
+
+      // Show user-specific navigation, hide guest navigation
+      guestNav.classList.add('hidden');
+      userNav.classList.remove('hidden');
+      
+      // Update username and initial
+      const displayName = user.displayName || user.email.split('@')[0];
+      usernameDisplay.textContent = displayName;
+      userInitial.textContent = displayName.charAt(0).toUpperCase();
+
+      loadMiscellaneousSpends(); // Load data for authenticated user
+    } else {
+      userId = null;
+      console.log("No user signed in. Miscellaneous Spends functionality disabled.");
+      authMessage.style.display = 'block';
+      mainContentWrapper.style.display = 'none'; // Hide main content
+      setFormState(false); // Disable form
+
+      // Hide user-specific navigation, show guest navigation
+      guestNav.classList.remove('hidden');
+      userNav.classList.add('hidden');
+
+      // Clear spend list with a message
+      spendList.innerHTML = '<li class="text-gray-500 text-center">Please sign in to view your miscellaneous spends.</li>';
+    }
+  });
+
+  // --- Logout Functionality ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await auth.signOut();
+        alert('You have been logged out.');
+        window.location.href = 'log.html'; // Redirect to login page
+      } catch (error) {
+        console.error("Error logging out:", error);
+        alert("Error logging out: " + error.message);
+      }
+    });
+  }
+
+  // Toggle profile dropdown on click for mobile/touch devices
+  if (profileButton) {
+    profileButton.addEventListener('click', () => {
+      const dropdown = profileButton.nextElementSibling; // Get the .profile-dropdown
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', (event) => {
+      if (!profileButton.contains(event.target) && !userNav.contains(event.target)) {
+        const dropdown = profileButton.nextElementSibling;
+        if (dropdown) {
+          dropdown.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  // --- Add New Spend to Firestore ---
+  spendForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (!userId) {
+        alert("Please sign in to add spends.");
+        return;
+    }
+
+    const title = titleInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    const date = dateInput.value;
+
+    if (!title || isNaN(amount) || amount <= 0 || !date) {
+      alert('⚠️ Please fill all fields correctly!');
+      return;
+    }
+
+    try {
+        const newSpend = { 
+            title, 
+            amount, 
+            date, 
+            timestamp: firebase.firestore.Timestamp.fromDate(new Date(date + 'T12:00:00')) 
+        };
+
+        await db.collection('users').doc(userId).collection('miscellaneousSpends').add(newSpend);
+        
+        console.log("Miscellaneous spend added to Firestore!");
+        alert("Spend added successfully!");
+        spendForm.reset(); 
+    } catch (error) {
+        console.error("Error adding miscellaneous spend:", error);
+        alert("Error saving spend: " + error.message);
+    }
+  });
+
+  // --- Load and Display Miscellaneous Spends from Firestore (Real-time) ---
+  function loadMiscellaneousSpends() {
+    if (!userId) {
+        spendList.innerHTML = '<li class="text-gray-500 text-center">Please sign in to view your miscellaneous spends.</li>';
+        return;
+    }
+
+    db.collection('users').doc(userId).collection('miscellaneousSpends')
+      .orderBy('timestamp', 'desc') 
+      .onSnapshot(snapshot => {
+        spendList.innerHTML = ''; 
+
+        if (snapshot.empty) {
+          spendList.innerHTML = '<li class="text-gray-500 text-center">No miscellaneous spends recorded yet.</li>';
+        } else {
+          snapshot.forEach(doc => {
+            const spend = doc.data();
+            const listItem = document.createElement("li");
+            listItem.className = "bg-gray-100 p-3 rounded-lg shadow flex justify-between items-center border-l-4 border-indigo-500"; /* Added some styling for list items */
+            
+            let displayDate = spend.date; 
+            if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+                const dateObj = spend.timestamp.toDate();
+                displayDate = dateObj.toLocaleDateString('en-GB'); 
+            }
+
+            listItem.innerHTML = `
+              <div>
+                <strong>${spend.title}</strong><br/>
+                <span class="text-sm text-gray-600">Date: ${displayDate}</span>
+              </div>
+              <span class="font-semibold text-indigo-600">₹${spend.amount.toFixed(2)}</span>
+            `;
+            spendList.appendChild(listItem);
+          });
+        }
+      }, error => {
+        console.error("Error fetching miscellaneous spends:", error);
+        spendList.innerHTML = '<li class="text-red-500 text-center">Error loading spend history.</li>';
+        alert("Error loading spend history: " + error.message);
+      });
+  }
+
+  // Initial setup when page loads (state will be updated by onAuthStateChanged)
+  setFormState(false);
+  spendList.innerHTML = '<li class="text-gray-500 text-center">Authenticating...</li>';
+
+</script>
+
+</body>
+</html>

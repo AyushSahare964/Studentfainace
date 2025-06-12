@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Limit - Finance Tracker</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(to right, #34d399, #6366f1);
+    }
+    #mainContentWrapper {
+      display: none;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    .calendar-day {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 5px;
+      min-height: 100px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #374151;
+      overflow: hidden;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .calendar-day:hover {
+      background-color: #f0f4f8;
+    }
+    .calendar-day.current-month {
+      background-color: white;
+    }
+    .calendar-day.other-month {
+      opacity: 0.5;
+    }
+    .calendar-day-header {
+      font-weight: 600;
+      color: #4B5563;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .calendar-day-date {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #6B7280;
+      margin-bottom: 5px;
+    }
+    .calendar-day-number {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 5px;
+    }
+    .daily-total {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #EF4444;
+      margin-top: auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding-top: 5px;
+    }
+    .daily-total.positive {
+      color: #10B981;
+    }
+    .current-day-highlight {
+      background-color: #DBEAFE;
+      border-color: #3B82F6;
+    }
+    @media (max-width: 768px) {
+      .calendar-day { padding: 10px 5px; min-height: 95px; }
+      .calendar-day-number { font-size: 1.15rem; }
+      .calendar-day-date { font-size: 0.78rem; }
+      .daily-total { font-size: 0.88rem; }
+    }
+    @media (max-width: 640px) {
+      .calendar-day { min-height: 85px; padding: 8px 4px; }
+      .calendar-day-number { font-size: 1.1rem; margin-bottom: 3px; }
+      .calendar-day-date { font-size: 0.75rem; }
+      .daily-total { font-size: 0.85rem; padding-top: 4px; }
+      .calendar-grid { gap: 4px; }
+    }
+    @media (max-width: 480px) {
+      .calendar-day { min-height: 75px; padding: 7px 3px; }
+      .calendar-day-number { font-size: 1.0rem; }
+      .calendar-day-date { font-size: 0.7rem; }
+      .daily-total { font-size: 0.8rem; padding-top: 3px; }
+      .calendar-grid { gap: 3px; }
+    }
+    #spendDetailsModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+    }
+    #spendDetailsModal .modal-content {
+      background-color: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 90%;
+      position: relative;
+      animation: popIn 0.3s ease-out;
+    }
+    #closeSpendDetailsModal {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #6B7280;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    #closeSpendDetailsModal:hover {
+      color: #1F2937;
+    }
+    #modalSpendList {
+      max-height: 250px;
+      overflow-y: auto;
+      margin-top: 16px;
+      padding-right: 8px;
+    }
+    #modalSpendList li {
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #F9FAFB;
+    }
+    #modalSpendList li:last-child { margin-bottom: 0; }
+    #modalSpendList li p { margin: 0; font-size: 0.95rem; }
+    #modalSpendList li p.text-xs { font-size: 0.75rem; color: #6B7280; }
+    #modalSpendList li span.font-semibold { font-size: 1rem; color: #DC2626; }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Profile Dropdown Styles */
+    .profile-container {
+      position: relative;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%; /* Position below the button */
+      right: 0;
+      background-color: white;
+      border-radius: 0.5rem; /* rounded-lg */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+      width: 150px;
+      overflow: hidden;
+      margin-top: 0.5rem; /* Space between button and dropdown */
+      z-index: 50; /* Ensure it's above other content */
+      display: none; /* Hidden by default */
+    }
+    .profile-dropdown a {
+      display: block;
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      color: #4B5563; /* gray-700 */
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+    .profile-dropdown a:hover {
+      background-color: #F3F4F6; /* gray-100 */
+    }
+    /* Show dropdown on parent hover/focus (for desktop) */
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+    /* For touch devices, consider adding JS to toggle visibility on click */
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
+
+<!-- Header -->
+<header class="gradient-bg text-white py-5 shadow-lg">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+    <h1 class="text-3xl font-bold">📅 Monthly Limit Tracker</h1>
+    
+    <nav class="flex items-center space-x-4">
+      <!-- This will be shown when user is NOT logged in -->
+      <div id="guest-nav" class="flex space-x-4">
+        <a href="log.html" class="text-white hover:underline text-lg">Login</a>
+        <a href="register.html" class="text-white hover:underline text-lg">Register</a>
+      </div>
+
+      <!-- This will be shown when user is logged in -->
+      <div id="user-nav" class="hidden">
+        <div class="profile-container relative">
+          <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
+            <span id="username-display" class="text-lg">User</span>
+            <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+              <span id="user-initial">U</span>
+            </div>
+          </button>
+          <div class="profile-dropdown">
+            <a href="index.html">🏠 Home</a>
+            <a href="profile.html">👤 My Profile</a>
+            <a href="settings.html">⚙️ Settings</a>
+            <a href="#" id="logout-btn">🚪 Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Main Content Wrapper (controlled by authentication) -->
+<main class="container mx-auto px-4 py-12">
+  <!-- Authentication Message -->
+  <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-2xl mx-auto mb-8" role="alert" style="display: none;">
+    <strong class="font-bold">Access Denied:</strong>
+    <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to manage your monthly limit and view spending data.</span>
+  </div>
+
+  <div id="mainContentWrapper">
+    <!-- Section: Heading -->
+    <section class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-indigo-600 mb-4">Manage Your Monthly Limit</h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Set your monthly limit and track daily spending automatically!
+      </p>
+    </section>
+
+    <!-- Section: Calendar Overview (first section) -->
+    <section class="max-w-4xl mx-auto mb-12">
+      <div class="bg-white rounded-3xl p-8 shadow-lg">
+        <h3 class="text-2xl font-semibold mb-6 text-indigo-600">🗓️ Spending Calendar</h3>
+        <div class="flex justify-between items-center mb-4">
+          <button id="prevMonthBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">← Previous</button>
+          <h4 id="currentMonthYear" class="text-xl font-semibold text-gray-800"></h4>
+          <button id="nextMonthBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Next →</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header">Sun</div>
+          <div class="calendar-day-header">Mon</div>
+          <div class="calendar-day-header">Tue</div>
+          <div class="calendar-day-header">Wed</div>
+          <div class="calendar-day-header">Thu</div>
+          <div class="calendar-day-header">Fri</div>
+          <div class="calendar-day-header">Sat</div>
+        </div>
+        <div id="calendarDays" class="calendar-grid mt-2"></div>
+      </div>
+    </section>
+
+    <!-- Section: Daily Spending Overview (second section) -->
+    <section class="max-w-4xl mx-auto mb-12">
+      <div class="bg-white rounded-3xl p-8 shadow-lg">
+        <h3 class="text-2xl font-semibold mb-6 text-indigo-600">📊 Daily Spending Overview</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto">
+            <thead class="bg-indigo-100">
+              <tr>
+                <th class="px-4 py-2 text-left text-gray-700 font-semibold">Date</th>
+                <th class="px-4 py-2 text-left text-gray-700 font-semibold">Total Spent (₹)</th>
+                <th class="px-4 py-2 text-left text-gray-700 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="dailySpendTable" class="divide-y divide-gray-200">
+              <tr>
+                <td colspan="3" class="px-4 py-2 text-center text-gray-500">Loading daily data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Current Status Card (moved here to be in center) -->
+    <section class="max-w-2xl mx-auto mb-12">
+      <div id="currentStatusCard" class="bg-gray-50 p-6 rounded-xl shadow-inner">
+        <h4 class="text-xl font-semibold text-green-600 mb-4">📊 Current Status</h4>
+        <p class="text-gray-700 text-lg">Monthly Limit: <span id="currentLimit" class="font-bold text-indigo-600">₹0</span></p>
+        <p class="text-gray-700 text-lg">Total Expenses: <span id="totalExpenses" class="font-bold text-red-600">₹0</span></p>
+        <p class="text-gray-700 text-lg">Remaining Balance: <span id="remainingBalance" class="font-bold text-green-600">₹0</span></p>
+      </div>
+    </section>
+
+    <!-- Section: Set Monthly Limit Card (moved to bottom) -->
+    <section class="max-w-2xl mx-auto">
+      <div class="bg-white rounded-3xl p-8 shadow-lg">
+        <h3 class="text-2xl font-semibold mb-6 text-indigo-600">Set Monthly Limit</h3>
+        <div class="mb-6">
+          <label for="monthlyLimitInput" class="block text-gray-600 mb-2">Monthly Limit (₹)</label>
+          <input type="number" id="monthlyLimitInput" class="w-full p-4 border rounded-lg shadow-sm" placeholder="Enter your monthly limit" min="0" step="any">
+        </div>
+        <button id="setLimitBtn" class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">
+          Set Limit
+        </button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="gradient-bg text-white text-center py-5 mt-12 shadow-inner">
+  <p class="text-lg">&copy; 2025 Finance Tracker. All rights reserved.</p>
+</footer>
+
+<!-- Modal Popup for Spend Details -->
+<div id="spendDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+  <div class="modal-content">
+    <button id="closeSpendDetailsModal" class="">&times;</button>
+    <h2 id="modalDate" class="text-xl font-bold text-indigo-600 mb-4"></h2>
+    <div id="modalSpendList" class="space-y-3"></div>
+    <p id="modalTotalSpend" class="text-lg font-semibold text-gray-800 mt-4 text-right">Total: ₹0.00</p>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // === IMPORTANT: USE THIS EXACT FIREBASE CONFIGURATION IN ALL YOUR FILES ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.firebasestorage.app",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let userId = null;
+
+  // UI elements
+  const authMessage = document.getElementById('authMessage');
+  const mainContentWrapper = document.getElementById('mainContentWrapper');
+  const monthlyLimitInput = document.getElementById('monthlyLimitInput');
+  const setLimitBtn = document.getElementById('setLimitBtn');
+  const currentLimitDisplay = document.getElementById('currentLimit');
+  const totalExpensesDisplay = document.getElementById('totalExpenses');
+  const remainingBalanceDisplay = document.getElementById('remainingBalance');
+  const dailySpendTable = document.getElementById('dailySpendTable');
+
+  // Calendar elements
+  const currentMonthYearDisplay = document.getElementById('currentMonthYear');
+  const calendarDaysContainer = document.getElementById('calendarDays');
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+
+  // Modal elements
+  const spendDetailsModal = document.getElementById('spendDetailsModal');
+  const closeSpendDetailsModalBtn = document.getElementById('closeSpendDetailsModal');
+  const modalDateDisplay = document.getElementById('modalDate');
+  const modalSpendList = document.getElementById('modalSpendList');
+  const modalTotalSpend = document.getElementById('modalTotalSpend');
+
+  // New header elements
+  const guestNav = document.getElementById('guest-nav');
+  const userNav = document.getElementById('user-nav');
+  const usernameDisplay = document.getElementById('username-display');
+  const userInitial = document.getElementById('user-initial');
+  const logoutBtn = document.getElementById('logout-btn');
+  const profileButton = document.getElementById('profile-button');
+
+
+  let monthlyLimit = 0;
+  let allDailySpendsData = []; // Stores categorized daily spends from dailyLimits/current
+  let allMiscellaneousSpendsData = []; // Stores miscellaneous spends from miscellaneousSpends collection
+  let allSavingsData = []; // Stores savings data from savings collection
+  let preparedDailySpendDetails = {}; // For calendar modal details
+
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+
+  function getLocalDateKey(dateObject) {
+    const year = dateObject.getFullYear();
+    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
+    const day = dateObject.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      userId = user.uid;
+      console.log("User signed in:", userId);
+      authMessage.style.display = 'none';
+      mainContentWrapper.style.display = 'block';
+
+      // Show user-specific navigation, hide guest navigation
+      guestNav.classList.add('hidden');
+      userNav.classList.remove('hidden');
+      
+      // Update username and initial
+      const displayName = user.displayName || user.email.split('@')[0];
+      usernameDisplay.textContent = displayName;
+      userInitial.textContent = displayName.charAt(0).toUpperCase();
+
+      initMonthlyLimitPage();
+    } else {
+      userId = null;
+      console.log("No user signed in. Monthly limit page functionality disabled.");
+      authMessage.style.display = 'block';
+      mainContentWrapper.style.display = 'none';
+
+      // Hide user-specific navigation, show guest navigation
+      guestNav.classList.remove('hidden');
+      userNav.classList.add('hidden');
+
+      currentLimitDisplay.innerText = '₹0';
+      totalExpensesDisplay.innerText = '₹0';
+      remainingBalanceDisplay.innerText = '₹0';
+      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Please sign in to view your daily spending.</td></tr>';
+      calendarDaysContainer.innerHTML = '<tr><td colspan="7" class="py-3 px-6 text-center text-gray-500">Please sign in to view your calendar.</td></tr>';
+      currentMonthYearDisplay.textContent = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+      monthlyLimitInput.value = 0;
+    }
+  });
+
+  // --- Logout Functionality ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await auth.signOut();
+        alert('You have been logged out.');
+        window.location.href = 'log.html'; // Redirect to login page
+      } catch (error) {
+        console.error("Error logging out:", error);
+        alert("Error logging out: " + error.message);
+      }
+    });
+  }
+
+  // Toggle profile dropdown on click for mobile/touch devices
+  if (profileButton) {
+    profileButton.addEventListener('click', () => {
+      const dropdown = profileButton.nextElementSibling; // Get the .profile-dropdown
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', (event) => {
+      if (!profileButton.contains(event.target) && !userNav.contains(event.target)) {
+        const dropdown = profileButton.nextElementSibling;
+        if (dropdown) {
+          dropdown.style.display = 'none';
+        }
+      }
+    });
+  }
+
+
+  async function initMonthlyLimitPage() {
+    if (!userId) return;
+    try {
+      // Fetch monthly limit
+      const monthlyLimitDocRef = db.collection('users').doc(userId).collection('monthlyLimits').doc('current');
+      const monthlyLimitDoc = await monthlyLimitDocRef.get();
+
+      if (monthlyLimitDoc.exists) {
+        monthlyLimit = parseFloat(monthlyLimitDoc.data().limit) || 0;
+        monthlyLimitInput.value = monthlyLimit;
+      } else {
+        monthlyLimit = 0;
+        monthlyLimitInput.value = 0;
+      }
+      currentLimitDisplay.innerText = `₹${monthlyLimit.toFixed(2)}`;
+
+      // Fetch daily categorized spends
+      const dailyLimitDocRef = db.collection('users').doc(userId).collection('dailyLimits').doc('current');
+      const dailyLimitDoc = await dailyLimitDocRef.get();
+      if (dailyLimitDoc.exists && dailyLimitDoc.data().spends) {
+        allDailySpendsData = dailyLimitDoc.data().spends;
+      } else {
+        allDailySpendsData = [];
+      }
+
+      // Fetch miscellaneous spends
+      const miscSpendsSnapshot = await db.collection('users').doc(userId).collection('miscellaneousSpends').get();
+      allMiscellaneousSpendsData = miscSpendsSnapshot.docs.map(doc => doc.data());
+
+      // Fetch savings data
+      const savingsSnapshot = await db.collection('users').doc(userId).collection('savings').get();
+      allSavingsData = savingsSnapshot.docs.map(doc => doc.data());
+
+
+      // Prepare data for calendar modal (combining daily and misc spends for detail pop-up)
+      const combinedSpendsForDetails = [...allDailySpendsData];
+      allMiscellaneousSpendsData.forEach(miscSpend => {
+          // Add a 'category' or 'type' to distinguish it, if not already present
+          combinedSpendsForDetails.push({ ...miscSpend, category: miscSpend.category || 'Miscellaneous' });
+      });
+      preparedDailySpendDetails = prepareDailySpendDetails(combinedSpendsForDetails);
+
+      // Update monthly data displays using all types of allocations
+      updateMonthlyData(allDailySpendsData, allMiscellaneousSpendsData, allSavingsData);
+      
+      // Pass the current daily limit to generateDailySpendingTable
+      const currentDailyLimit = parseFloat(dailyLimitDoc.data().limit || 0);
+      generateDailySpendingTable(allDailySpendsData, currentDailyLimit); // Still uses only daily categorized spends for table
+      renderCalendar();
+    } catch (error) {
+      console.error("Error initializing monthly limit page:", error);
+      currentLimitDisplay.innerText = 'Error';
+      totalExpensesDisplay.innerText = 'Error';
+      remainingBalanceDisplay.innerText = 'Error';
+      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading data.</td></tr>';
+      calendarDaysContainer.innerHTML = '<tr><td colspan="7" class="py-3 px-6 text-center text-red-500">Error loading calendar data.</td></tr>';
+    }
+  }
+
+  setLimitBtn.addEventListener('click', async () => {
+    if (!userId) {
+      alert("Please sign in to set your monthly limit.");
+      return;
+    }
+    const limitInput = parseFloat(monthlyLimitInput.value);
+    if (isNaN(limitInput) || limitInput < 0) {
+      alert("⚠️ Please enter a valid monthly limit (a positive number or zero).");
+      return;
+    }
+    try {
+      const monthlyLimitDocRef = db.collection('users').doc(userId).collection('monthlyLimits').doc('current');
+      await monthlyLimitDocRef.set({
+        limit: limitInput,
+        lastSetDate: getLocalDateKey(new Date())
+      }, { merge: true });
+      monthlyLimit = limitInput;
+      currentLimitDisplay.innerText = `₹${monthlyLimit.toFixed(2)}`;
+      alert('Monthly limit set and saved!');
+
+      // Re-fetch all data and update UI after setting limit
+      await initMonthlyLimitPage(); // Re-initialize the page to get fresh data
+    } catch (error) {
+      console.error("Error saving monthly limit:", error);
+      alert("Error saving monthly limit: " + error.message);
+    }
+  });
+
+  // New function to calculate total monthly expenses from daily, miscellaneous, and savings
+  function calculateMonthlyTotalAllocations(dailySpends, miscellaneousSpends, savingsData) {
+    let monthlyTotal = 0;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Sum daily categorized spends for the current month
+    dailySpends.forEach(spend => {
+      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+        const spendDate = spend.timestamp.toDate();
+        if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
+          monthlyTotal += spend.amount;
+        }
+      }
+    });
+
+    // Sum miscellaneous spends for the current month
+    miscellaneousSpends.forEach(spend => {
+      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+        const spendDate = spend.timestamp.toDate();
+        if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
+          monthlyTotal += spend.amount;
+        }
+      }
+    });
+
+    // Sum savings for the current month
+    savingsData.forEach(save => {
+      if (save.timestamp && typeof save.timestamp.toDate === 'function') {
+        const saveDate = save.timestamp.toDate();
+        if (saveDate.getMonth() === currentMonth && saveDate.getFullYear() === currentYear) {
+          monthlyTotal += save.amount;
+        }
+      }
+    });
+
+    return monthlyTotal;
+  }
+
+  // Update function to accept all relevant data types
+  function updateMonthlyData(dailySpends, miscellaneousSpends, savingsData) {
+    const totalAllocations = calculateMonthlyTotalAllocations(dailySpends, miscellaneousSpends, savingsData);
+    totalExpensesDisplay.innerText = `₹${totalAllocations.toFixed(2)}`; // Renamed to totalAllocations conceptually
+
+    const remainingBalance = monthlyLimit - totalAllocations;
+    remainingBalanceDisplay.innerText = `₹${remainingBalance.toFixed(2)}`;
+    remainingBalanceDisplay.style.color = remainingBalance >= 0 ? '#10B981' : '#EF4444';
+  }
+
+  function groupSpendingByDate(spendsArray, targetMonth, targetYear) {
+    const grouped = {};
+    spendsArray.forEach(spend => {
+      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+        const spendDate = spend.timestamp.toDate();
+        if (spendDate.getMonth() === targetMonth && spendDate.getFullYear() === targetYear) {
+          const dateKey = getLocalDateKey(spendDate);
+          if (!grouped[dateKey]) grouped[dateKey] = 0;
+          grouped[dateKey] += spend.amount;
+        }
+      }
+    });
+    return grouped;
+  }
+
+  function prepareDailySpendDetails(spendsArray) {
+    const dailyDetails = {};
+    spendsArray.forEach(spend => {
+      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+        const spendDate = spend.timestamp.toDate();
+        const dateKey = getLocalDateKey(spendDate);
+        if (!dailyDetails[dateKey]) {
+          dailyDetails[dateKey] = [];
+        }
+        dailyDetails[dateKey].push(spend);
+      }
+    });
+    return dailyDetails;
+  }
+
+  function generateDailySpendingTable(allDailySpends, dailyLimit) {
+    dailySpendTable.innerHTML = '';
+    const today = new Date();
+    const currentMonthForTable = today.getMonth();
+    const currentYearForTable = today.getFullYear();
+    const grouped = groupSpendingByDate(allDailySpends, currentMonthForTable, currentYearForTable);
+    const sortedDateKeys = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+    if (sortedDateKeys.length === 0) {
+      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No daily spending data for this month.</td></tr>';
+      return;
+    }
+    sortedDateKeys.forEach(dateKey => {
+      const total = grouped[dateKey];
+      const tr = document.createElement('tr');
+      const statusClass = total <= dailyLimit ? 'bg-green-500' : 'bg-red-500';
+      const statusText = total <= dailyLimit ? 'Within Limit' : 'Over Limit';
+      const displayDate = new Date(dateKey).toLocaleDateString('en-GB');
+      tr.innerHTML = `
+        <td class="px-4 py-2">${displayDate}</td>
+        <td class="px-4 py-2">₹${total.toFixed(2)}</td>
+        <td class="px-4 py-2">
+          <span class="px-3 py-1 rounded-full text-white text-sm font-medium ${statusClass}">
+            ${statusText}
+          </span>
+        </td>
+      `;
+      dailySpendTable.appendChild(tr);
+    });
+  }
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  function renderCalendar() {
+    calendarDaysContainer.innerHTML = '';
+    currentMonthYearDisplay.textContent = `${months[currentMonth]} ${currentYear}`;
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const startDay = firstDayOfMonth.getDay();
+    const today = new Date();
+    const todayDate = today.getDate();
+    const todayMonth = today.getMonth();
+    const todayYear = today.getFullYear();
+
+    // Group *all* relevant spending amounts (daily and miscellaneous) for the calendar display
+    // Savings are not typically shown per day on a calendar for spending, but contribute to monthly limit
+    const allRelevantSpendsForCalendar = [
+        ...allDailySpendsData.filter(s => {
+            const date = s.timestamp.toDate();
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        }),
+        ...allMiscellaneousSpendsData.filter(s => {
+            const date = s.timestamp.toDate();
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        })
+    ];
+    const monthlySpendingMap = groupSpendingByDate(allRelevantSpendsForCalendar, currentMonth, currentYear);
+    
+    // Fetch daily limit to apply color coding in calendar
+    let currentDailyLimit = 0;
+    db.collection('users').doc(userId).collection('dailyLimits').doc('current').get()
+      .then(doc => {
+        if (doc.exists) {
+          currentDailyLimit = parseFloat(doc.data().limit || 0);
+        }
+
+        for (let i = 0; i < startDay; i++) {
+          const emptyDay = document.createElement('div');
+          emptyDay.className = 'calendar-day other-month';
+          calendarDaysContainer.appendChild(emptyDay);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const fullDateLocal = new Date(currentYear, currentMonth, day);
+          const dateKeyForMap = getLocalDateKey(fullDateLocal);
+          const totalSpentForDay = monthlySpendingMap[dateKeyForMap] || 0;
+          const dayElement = document.createElement('div');
+          dayElement.className = 'calendar-day current-month';
+          dayElement.dataset.date = dateKeyForMap;
+          dayElement.addEventListener('click', () => showSpendDetailsModal(dateKeyForMap));
+          if (day === todayDate && currentMonth === todayMonth && currentYear === todayYear) {
+            dayElement.classList.add('current-day-highlight');
+          }
+
+          let totalDisplay = `₹${totalSpentForDay.toFixed(2)}`;
+          let totalClass = ''; 
+          if (totalSpentForDay > 0 && currentDailyLimit > 0 && totalSpentForDay > currentDailyLimit) {
+            totalClass = 'text-red-500'; // Over limit, make it red
+          } else if (totalSpentForDay === 0) {
+            totalClass = 'text-gray-400'; // No spend, make it gray
+          } else {
+             totalClass = 'text-green-600'; // Within limit, make it green
+          }
+          
+          dayElement.innerHTML = `
+            <span class="calendar-day-number">${day}</span>
+            <span class="daily-total ${totalClass}">${totalDisplay}</span>
+          `;
+          calendarDaysContainer.appendChild(dayElement);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching daily limit for calendar:", error);
+        // Fallback if daily limit fetching fails (display based on collected data without limit styling)
+        for (let i = 0; i < startDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day other-month';
+            calendarDaysContainer.appendChild(emptyDay);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            const fullDateLocal = new Date(currentYear, currentMonth, day);
+            const dateKeyForMap = getLocalDateKey(fullDateLocal);
+            const totalSpentForDay = monthlySpendingMap[dateKeyForMap] || 0;
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day current-month';
+            dayElement.dataset.date = dateKeyForMap;
+            dayElement.addEventListener('click', () => showSpendDetailsModal(dateKeyForMap));
+            if (day === todayDate && currentMonth === todayMonth && currentYear === todayYear) {
+                dayElement.classList.add('current-day-highlight');
+            }
+            let totalDisplay = `₹${totalSpentForDay.toFixed(2)}`;
+            let totalClass = totalSpentForDay === 0 ? 'text-gray-400' : 'positive';
+            
+            dayElement.innerHTML = `
+                <span class="calendar-day-number">${day}</span>
+                <span class="daily-total ${totalClass}">${totalDisplay}</span>
+            `;
+            calendarDaysContainer.appendChild(dayElement);
+        }
+      });
+  }
+
+
+  prevMonthBtn.addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    renderCalendar();
+  });
+
+  nextMonthBtn.addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    renderCalendar();
+  });
+
+  function showSpendDetailsModal(dateKey) {
+    modalSpendList.innerHTML = '';
+    let totalForModal = 0;
+    const spendsForDate = preparedDailySpendDetails[dateKey] || [];
+    const dateObj = new Date(dateKey + 'T00:00:00');
+    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    modalDateDisplay.textContent = `Spends for ${formattedDate}`;
+    if (spendsForDate.length === 0) {
+      modalSpendList.innerHTML = '<li class="text-gray-500">No spends recorded for this date.</li>';
+    } else {
+      spendsForDate.sort((a, b) => {
+        const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : 0;
+        const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : 0;
+        return timeB - timeA;
+      });
+      spendsForDate.forEach(spend => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-gray-50 p-2 rounded-lg';
+        const spendTime = spend.timestamp && typeof spend.timestamp.toDate === 'function'
+          ? spend.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+          : '';
+
+        // Determine category display
+        // Use 'category' for daily spends, 'title' for miscellaneous spends, or 'N/A'
+        const typeDisplay = spend.category || spend.title || 'N/A'; 
+        
+        li.innerHTML = `
+          <div>
+            <p class="font-medium text-gray-800">${typeDisplay}</p>
+            <p class="text-xs text-gray-500">${spendTime}</p>
+          </div>
+          <span class="font-semibold text-red-600">₹${spend.amount.toFixed(2)}</span>
+        `;
+        modalSpendList.appendChild(li);
+        totalForModal += spend.amount;
+      });
+    }
+    modalTotalSpend.textContent = `Total: ₹${totalForModal.toFixed(2)}`;
+    spendDetailsModal.style.display = 'flex';
+  }
+
+  closeSpendDetailsModalBtn.addEventListener('click', () => {
+    spendDetailsModal.style.display = 'none';
+  });
+
+  spendDetailsModal.addEventListener('click', (event) => {
+    if (event.target === spendDetailsModal) {
+      spendDetailsModal.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>

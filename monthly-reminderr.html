@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monthly Reminder - Self Finance Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background-color: #f0f4f8; 
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .pop-in {
+      animation: popIn 0.3s ease-out;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+    }
+
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 1rem; 
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-container {
+      position: relative;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%; 
+      right: 0;
+      background-color: white;
+      border-radius: 0.5rem; 
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+      width: 150px;
+      overflow: hidden;
+      margin-top: 0.5rem; 
+      z-index: 50; 
+      display: none; 
+    }
+    .profile-dropdown a {
+      display: block;
+      padding: 0.75rem 1rem; 
+      color: #4B5563; 
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+    .profile-dropdown a:hover {
+      background-color: #F3F4F6; 
+    }
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+
+    #mainContentWrapper {
+        display: none; 
+    }
+
+    .message-box {
+      background-color: #e0f2fe; 
+      color: #2563eb; 
+      padding: 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      margin-top: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="gradient-bg text-white py-6 shadow-lg">
+  <div class="container mx-auto px-6 flex justify-between items-center">
+    <h1 class="text-3xl font-extrabold tracking-wide">📅 Monthly Reminders</h1>
+    
+    <nav class="flex items-center space-x-4">
+      <!-- This will be shown when user is NOT logged in -->
+      <div id="guest-nav" class="flex space-x-4">
+        <a href="log.html" class="text-white hover:underline text-lg">Login</a>
+        <a href="register.html" class="text-white hover:underline text-lg">Register</a>
+      </div>
+
+      <!-- This will be shown when user is logged in -->
+      <div id="user-nav" class="hidden">
+        <div class="profile-container relative">
+          <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
+            <span id="username-display" class="text-lg">User</span>
+            <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+              <span id="user-initial">U</span>
+            </div>
+          </button>
+          <div class="profile-dropdown">
+            <a href="index.html">🏠 Home</a>
+            <a href="profile.html">👤 My Profile</a>
+            <a href="setting.html">⚙️ Settings</a>
+            <a href="#" id="logout-btn">🚪 Logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="flex-grow flex flex-col items-center justify-start p-6 sm:p-8 md:p-10">
+  <!-- Auth Message -->
+  <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md w-full mb-6 text-center" role="alert" style="display: none;">
+    <strong class="font-bold">Access Denied:</strong>
+    <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to set and view your monthly reminders.</span>
+  </div>
+
+  <section id="mainContentWrapper" class="bg-white shadow-2xl rounded-2xl p-8 sm:p-10 max-w-md w-full text-center space-y-6 card">
+    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+      Set Reminders
+    </h1>
+    <p class="text-gray-600 text-base sm:text-lg">Stay on track! Set your monthly financial reminders below.</p>
+
+    <form id="reminderForm" class="flex flex-col gap-4">
+      <input type="text" id="title" placeholder="Reminder Title" 
+             class="border-2 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-blue-400 transition text-gray-800 text-base" required>
+
+      <input type="date" id="date" 
+             class="border-2 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-purple-400 transition text-gray-800 text-base" required>
+
+      <textarea id="notes" placeholder="Reminder Notes..." 
+                class="border-2 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-pink-400 transition text-gray-800 text-base" rows="3"></textarea>
+
+      <button type="submit" id="setReminderBtn" 
+              class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold py-3 rounded-xl transition text-lg shadow-lg">
+        ➕ Set Reminder
+      </button>
+    </form>
+    <div id="formMessage" class="message-box hidden"></div>
+    
+    <hr class="my-6 border-gray-200">
+
+    <h2 class="text-2xl font-bold text-gray-700 mb-4">Your Reminders</h2>
+    <ul id="reminderList" class="space-y-4 text-left">
+      <li class="text-gray-500 text-center">Loading reminders...</li>
+    </ul>
+  </section>
+</main>
+
+<!-- Modal Popup -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center pop-in">
+    <h2 class="text-2xl font-bold text-green-600 mb-4">✅ Reminder Set!</h2>
+    <p class="text-gray-700 mb-6">Your monthly reminder has been successfully saved.</p>
+    <button id="closeModal" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl transition shadow-md">
+      Close
+    </button>
+  </div>
+</div>
+
+<script>
+  // === IMPORTANT: USE THIS EXACT FIREBASE CONFIGURATION IN ALL YOUR FILES ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.firebasestorage.app",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let userId = null; // Stores the current authenticated user's ID
+  let userEmail = null; // Stores the current authenticated user's email
+
+  // Header elements
+  const guestNav = document.getElementById('guest-nav');
+  const userNav = document.getElementById('user-nav');
+  const usernameDisplay = document.getElementById('username-display');
+  const userInitial = document.getElementById('user-initial');
+  const logoutBtn = document.getElementById('logout-btn');
+  const profileButton = document.getElementById('profile-button');
+
+  // Main UI elements
+  const authMessage = document.getElementById('authMessage');
+  const mainContentWrapper = document.getElementById('mainContentWrapper');
+
+  const reminderForm = document.getElementById('reminderForm');
+  const titleInput = document.getElementById('title');
+  const dateInput = document.getElementById('date');
+  const notesInput = document.getElementById('notes');
+  const setReminderBtn = document.getElementById('setReminderBtn');
+  const formMessage = document.getElementById('formMessage'); // For form-specific messages
+  const reminderList = document.getElementById('reminderList');
+
+  // Modal elements
+  const modal = document.getElementById('modal');
+  const closeModalBtn = document.getElementById('closeModal');
+
+  // --- Utility Functions ---
+  function showMessage(element, msg, isError = false) {
+    element.textContent = msg;
+    element.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+    element.classList.add(isError ? 'bg-red-100' : 'bg-green-100', isError ? 'text-red-700' : 'text-green-700');
+    element.style.display = 'block';
+    setTimeout(() => {
+      element.style.display = 'none';
+    }, 3000);
+  }
+
+  function getFormattedDate(dateValue) {
+    // Handles both Firestore Timestamp objects and YYYY-MM-DD strings
+    let dateObj;
+    if (dateValue && typeof dateValue.toDate === 'function') {
+      dateObj = dateValue.toDate();
+    } else if (typeof dateValue === 'string') {
+      dateObj = new Date(dateValue + 'T00:00:00'); // Add T00:00:00 to avoid timezone issues
+    } else {
+      return 'N/A';
+    }
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return dateObj.toLocaleDateString('en-GB', options);
+  }
+
+  // --- UI State Management (Authentication) ---
+  function setUIState(isAuthenticated) {
+    if (isAuthenticated) {
+      authMessage.style.display = 'none';
+      mainContentWrapper.style.display = 'block'; 
+      // Enable form inputs
+      titleInput.disabled = false;
+      dateInput.disabled = false;
+      notesInput.disabled = false;
+      setReminderBtn.disabled = false;
+    } else {
+      authMessage.style.display = 'block';
+      mainContentWrapper.style.display = 'none';
+      // Disable form inputs
+      titleInput.disabled = true;
+      dateInput.disabled = true;
+      notesInput.disabled = true;
+      setReminderBtn.disabled = true;
+      reminderList.innerHTML = '<li class="text-gray-500 text-center">Please sign in to view your reminders.</li>';
+    }
+  }
+
+  // --- Authentication State Listener ---
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      userId = user.uid;
+      userEmail = user.email; // Store user's email
+      console.log("User signed in:", userId);
+      setUIState(true);
+
+      // Show user-specific navigation, hide guest navigation
+      guestNav.classList.add('hidden');
+      userNav.classList.remove('hidden');
+      
+      // Update username and initial
+      const displayName = user.displayName || user.email.split('@')[0];
+      usernameDisplay.textContent = displayName;
+      userInitial.textContent = displayName.charAt(0).toUpperCase();
+
+      loadReminders(); // Load reminders for the authenticated user
+    } else {
+      userId = null;
+      userEmail = null; // Clear user's email
+      console.log("No user signed in. Monthly Reminder page functionality disabled.");
+      setUIState(false);
+
+      // Hide user-specific navigation, show guest navigation
+      guestNav.classList.remove('hidden');
+      userNav.classList.add('hidden');
+    }
+  });
+
+  // --- Logout Functionality ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await auth.signOut();
+        alert('You have been logged out.');
+        window.location.href = 'log.html'; // Redirect to login page
+      } catch (error) {
+        console.error("Error logging out:", error);
+        alert("Error logging out: " + error.message);
+      }
+    });
+  }
+
+  // Toggle profile dropdown on click for mobile/touch devices
+  if (profileButton) {
+    profileButton.addEventListener('click', () => {
+      const dropdown = profileButton.nextElementSibling; // Get the .profile-dropdown
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', (event) => {
+      if (!profileButton.contains(event.target) && !userNav.contains(event.target)) {
+        const dropdown = profileButton.nextElementSibling;
+        if (dropdown) {
+          dropdown.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  // --- Reminder Form Submission ---
+  reminderForm.addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    if (!userId) {
+      showMessage(formMessage, "Please sign in to set a reminder.", true);
+      return;
+    }
+
+    const title = titleInput.value.trim();
+    const date = dateInput.value; // YYYY-MM-DD format
+    const notes = notesInput.value.trim();
+
+    if (!title || !date) {
+      showMessage(formMessage, "Please fill in the title and date fields.", true);
+      return;
+    }
+
+    setReminderBtn.disabled = true; // Disable button to prevent double submission
+    showMessage(formMessage, "Saving reminder...", false);
+
+    try {
+      // Add reminder to Firestore. This action will automatically trigger your Cloud Function!
+      const newReminder = {
+        title,
+        date, // Storing as string YYYY-MM-DD
+        notes,
+        timestamp: firebase.firestore.Timestamp.fromDate(new Date()) // Store current timestamp
+      };
+      await db.collection('users').doc(userId).collection('monthlyReminders').add(newReminder);
+
+      console.log("Reminder added successfully to Firestore! Email notification handled by Cloud Function.");
+      showMessage(formMessage, "Reminder successfully saved!", false); // Main form success message
+
+      modal.classList.remove('hidden'); // Show success modal
+      reminderForm.reset(); // Reset form fields
+
+    } catch (error) {
+      console.error("Error setting reminder:", error);
+      showMessage(formMessage, `Error setting reminder: ${error.message}`, true);
+    } finally {
+      setReminderBtn.disabled = false; // Re-enable button
+    }
+  });
+
+  // --- Modal Close Button ---
+  closeModalBtn.addEventListener('click', function() {
+    modal.classList.add('hidden'); // Hide modal
+  });
+
+  // Close modal if user clicks outside of it
+  modal.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+
+  // --- Load Reminders from Firestore (Real-time) ---
+  let remindersSnapshotUnsubscribe = null;
+
+  async function loadReminders() {
+    if (!userId) {
+        console.warn("loadReminders called without userId. Skipping data load.");
+        reminderList.innerHTML = '<li class="text-gray-500 text-center">Please sign in to view your reminders.</li>';
+        return;
+    }
+
+    // Unsubscribe from previous listener if it exists to prevent memory leaks/duplicate listeners
+    if (remindersSnapshotUnsubscribe) {
+        console.log("Unsubscribing from previous reminders listener.");
+        remindersSnapshotUnsubscribe();
+    }
+
+    try {
+      console.log("Setting up Firestore listener for monthly reminders for user:", userId);
+      remindersSnapshotUnsubscribe = db.collection('users').doc(userId).collection('monthlyReminders')
+        .orderBy('date', 'asc') // Order by date string (YYYY-MM-DD) ascending
+        .onSnapshot(snapshot => {
+          console.log("Received snapshot update for reminders. Documents changed:", snapshot.docChanges().length);
+          reminderList.innerHTML = ''; // Clear existing list items
+
+          if (snapshot.empty) {
+            console.log("No reminders found for user:", userId);
+            reminderList.innerHTML = '<li class="text-gray-500 text-center">No reminders set yet.</li>';
+          } else {
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const li = document.createElement('li');
+              li.className = "bg-gray-50 p-4 rounded-lg shadow-sm flex flex-col items-start space-y-1";
+              
+              const titleElem = document.createElement('p');
+              titleElem.className = "font-semibold text-lg text-blue-700";
+              titleElem.textContent = data.title;
+
+              const dateElem = document.createElement('p');
+              dateElem.className = "text-sm text-gray-600";
+              dateElem.textContent = `Date: ${getFormattedDate(data.date)}`;
+
+              const notesElem = document.createElement('p');
+              notesElem.className = "text-gray-700 text-base mt-2";
+              notesElem.textContent = data.notes;
+
+              li.appendChild(titleElem);
+              li.appendChild(dateElem);
+              if (data.notes) { // Only add notes if they exist
+                li.appendChild(notesElem);
+              }
+              
+              reminderList.appendChild(li);
+            });
+          }
+        }, error => {
+          console.error("Error fetching reminders from Firestore:", error);
+          reminderList.innerHTML = '<li class="text-red-500 text-center">Error loading reminders.</li>';
+          showMessage(formMessage, `Error loading reminders: ${error.message}`, true);
+        });
+
+    } catch (error) {
+      console.error("Error setting up Firestore listener for reminders (outer catch):", error);
+      showMessage(authMessage, "Failed to load reminders. Please try again or log in.", true);
+      setUIState(false); // Ensure UI is disabled on severe error
+    }
+  }
+
+  // Initial UI state setup (before onAuthStateChanged resolves)
+  setUIState(false);
+</script>
+
+</body>
+</html>

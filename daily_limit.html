@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Limit - Finance Tracker</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(to right, #c0e569, #8B5CF6);
+    }
+    /* Profile Dropdown Styles */
+    .profile-container {
+      position: relative;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%; /* Position below the button */
+      right: 0;
+      background-color: white;
+      border-radius: 0.5rem; /* rounded-lg */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+      width: 150px;
+      overflow: hidden;
+      margin-top: 0.5rem; /* Space between button and dropdown */
+      z-index: 50; /* Ensure it's above other content */
+      display: none; /* Hidden by default */
+    }
+    .profile-dropdown a {
+      display: block;
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      color: #4B5563; /* gray-700 */
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+    .profile-dropdown a:hover {
+      background-color: #F3F4F6; /* gray-100 */
+    }
+    /* Show dropdown on parent hover/focus (for desktop) */
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
+
+  <header class="gradient-bg text-white py-5 shadow-lg">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">💰 Daily Limit Tracker</h1>
+      <nav class="flex items-center space-x-4">
+        <!-- This will be shown when user is NOT logged in -->
+        <div id="guest-nav" class="flex space-x-4">
+          <a href="log.html" class="text-white hover:underline text-lg">Login</a>
+          <a href="register.html" class="text-white hover:underline text-lg">Register</a>
+        </div>
+
+        <!-- This will be shown when user is logged in -->
+        <div id="user-nav" class="hidden">
+          <div class="profile-container relative">
+            <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
+              <span id="username-display" class="text-lg">User</span>
+              <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+                <span id="user-initial">U</span>
+              </div>
+            </button>
+            <div class="profile-dropdown">
+              <a href="index.html">🏠 Home</a>
+              <a href="profile.html">👤 My Profile</a>
+              <a href="setting.html">⚙️ Settings</a>
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-10">
+
+    <div class="text-center text-lg font-medium text-gray-700 mb-6">
+      <p id="todayDate"></p>
+    </div>
+
+    <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-8 text-center" role="alert" style="display: none;">
+      <strong class="font-bold">Persistent Data Disabled:</strong>
+      <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to save your daily limits and spends across sessions.</span>
+    </div>
+
+    <div id="dailyOverviewCard" class="bg-white rounded-xl shadow-md p-6 max-w-xl mx-auto mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-indigo-600">Daily Overview</h2>
+      <p id="remainingBalance" class="text-lg font-bold mb-4">
+        Please log in to see your balance.
+      </p>
+
+      <h3 class="text-lg font-semibold mb-3 text-gray-700">Add New Spend</h3>
+      <form id="spendForm" class="space-y-4">
+        <div>
+          <label for="categorySelect" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select id="categorySelect"
+                  class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition">
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="spendAmount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+          <input type="number" id="spendAmount" placeholder="e.g., 150"
+                 class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition"
+                 min="0" step="any">
+        </div>
+        <button type="submit" id="addSpendBtn"
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-md transition">
+          Add Spend
+        </button>
+      </form>
+
+      <h3 class="text-lg font-semibold mt-6 mb-3 text-gray-700">Today's Spends</h3>
+      <ul id="spendList" class="space-y-3">
+        <li class="text-gray-500 text-center">Please log in to see your spends.</li>
+      </ul>
+    </div>
+
+    <div id="setLimitCard" class="bg-white rounded-xl shadow-md p-6 max-w-xl mx-auto mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-indigo-600">Set Your Daily Limit</h2>
+      <div class="flex items-center space-x-4">
+        <input type="number" id="dailyLimitInput" placeholder="Enter daily limit (e.g., 500)"
+               class="flex-grow p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-400 transition"
+               min="0" step="any">
+        <button id="setLimitBtn"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition">
+          Set Limit
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // === IMPORTANT: USE THIS EXACT FIREBASE CONFIGURATION IN ALL YOUR FILES (log.html, index.html, daily_limit.html, register.html) ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+      authDomain: "self-finance-13029.firebaseapp.com",
+      projectId: "self-finance-13029",
+      storageBucket: "self-finance-13029.firebasestorage.app", // Use this one for consistency!
+      messagingSenderId: "233384300457",
+      appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+      measurementId: "G-QT3K94SFZ3"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth(); // Get the auth service
+    const db = firebase.firestore();
+    const FieldValue = firebase.firestore.FieldValue; // Keep this, though we won't use it directly in the array push
+
+    let userId = null; // Initialize userId to null
+
+    const authMessage = document.getElementById('authMessage');
+    const dailyLimitInput = document.getElementById('dailyLimitInput');
+    const setLimitBtn = document.getElementById('setLimitBtn');
+    const spendAmountInput = document.getElementById('spendAmount');
+    const addSpendBtn = document.getElementById('addSpendBtn');
+
+    // New header elements
+    const guestNav = document.getElementById('guest-nav');
+    const userNav = document.getElementById('user-nav');
+    const usernameDisplay = document.getElementById('username-display');
+    const userInitial = document.getElementById('user-initial');
+    const logoutBtn = document.getElementById('logout-btn');
+    const profileButton = document.getElementById('profile-button'); // Added for dropdown toggle
+
+
+    // Function to enable/disable UI elements based on authentication status
+    function setUIState(isAuthenticated) {
+        if (isAuthenticated) {
+            authMessage.style.display = 'none';
+            // Enable inputs and buttons
+            dailyLimitInput.disabled = false;
+            setLimitBtn.disabled = false;
+            spendAmountInput.disabled = false;
+            addSpendBtn.disabled = false;
+            // Reset placeholder texts to normal for logged-in user
+            document.getElementById('remainingBalance').textContent = 'Loading balance...';
+            document.getElementById('spendList').innerHTML = '<li class="text-gray-500 text-center">Loading spends...</li>';
+        } else {
+            authMessage.style.display = 'block'; // Show login prompt
+            // Disable inputs and buttons
+            dailyLimitInput.disabled = true;
+            setLimitBtn.disabled = true;
+            spendAmountInput.disabled = true;
+            addSpendBtn.disabled = true;
+            // Update text content to reflect "Please log in"
+            document.getElementById('remainingBalance').textContent = 'Please log in to see your balance.';
+            document.getElementById('spendList').innerHTML = '<li class="text-gray-500 text-center">Please log in to see your spends.</li>';
+        }
+        setTodayDate(); // Always show today's date
+    }
+
+    // Function to handle authentication and initialize page
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // User is signed in
+            userId = user.uid;
+            console.log("User signed in:", userId);
+            setUIState(true); // Enable UI and load data
+            initDailyLimitPage(); // Call initialization function
+
+            // Show user-specific navigation, hide guest navigation
+            guestNav.classList.add('hidden');
+            userNav.classList.remove('hidden');
+            
+            // Update username and initial
+            const displayName = user.displayName || user.email.split('@')[0];
+            usernameDisplay.textContent = displayName;
+            userInitial.textContent = displayName.charAt(0).toUpperCase();
+
+        } else {
+            // No user is signed in
+            userId = null; // Ensure userId is null
+            console.log("No user signed in. Daily Limit page functionality for saving/loading disabled.");
+            setUIState(false); // Disable UI functionality and show login prompt
+
+            // Hide user-specific navigation, show guest navigation
+            guestNav.classList.remove('hidden');
+            userNav.classList.add('hidden');
+        }
+    });
+
+    // --- Logout Functionality ---
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await auth.signOut();
+          alert('You have been logged out.');
+          window.location.href = 'log.html'; // Redirect to login page
+        } catch (error) {
+          console.error("Error logging out:", error);
+          alert("Error logging out: " + error.message);
+        }
+      });
+    }
+
+    // Toggle profile dropdown on click for mobile/touch devices
+    if (profileButton) {
+      profileButton.addEventListener('click', () => {
+        const dropdown = profileButton.nextElementSibling; // Get the .profile-dropdown
+        if (dropdown) {
+          dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+      });
+
+      // Close dropdown if clicked outside
+      document.addEventListener('click', (event) => {
+        if (!profileButton.contains(event.target) && !userNav.contains(event.target)) {
+          const dropdown = profileButton.nextElementSibling;
+          if (dropdown) {
+            dropdown.style.display = 'none';
+          }
+        }
+      });
+    }
+
+
+    // This function will only be called if a user is authenticated.
+    function initDailyLimitPage() {
+        if (!userId) {
+            console.error("initDailyLimitPage called without a valid userId. This indicates an issue.");
+            setUIState(false);
+            return;
+        }
+
+        // --- Core Functions to interact with Firestore ---
+
+        function getDailyLimit() {
+            db.collection('users').doc(userId).collection('dailyLimits').doc('current').get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        dailyLimitInput.value = data.limit || 0;
+                    } else {
+                        console.log("No daily limit set for this user yet.");
+                        dailyLimitInput.value = 0;
+                    }
+                    updateRemainingBalance();
+                    renderSpendList();
+                })
+                .catch(error => {
+                    console.error("Error getting daily limit: ", error);
+                    alert("Error loading daily limit: " + error.message);
+                    dailyLimitInput.value = 0;
+                    updateRemainingBalance();
+                    renderSpendList();
+                });
+        }
+
+        setLimitBtn.addEventListener('click', function() {
+            const limit = parseFloat(dailyLimitInput.value);
+            if (isNaN(limit) || limit < 0) {
+                alert('Please enter a valid daily limit (a positive number or zero).');
+                return;
+            }
+
+            db.collection('users').doc(userId).collection('dailyLimits').doc('current').set({
+                limit: limit,
+                lastSetDate: new Date().toISOString().split('T')[0]
+            }, { merge: true })
+            .then(() => {
+                alert('Daily limit set and saved!');
+                updateRemainingBalance();
+            })
+            .catch(error => {
+                console.error("Error setting daily limit: ", error);
+                alert("Error saving daily limit: " + error.message);
+            });
+        });
+
+        document.getElementById('spendForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const category = document.getElementById('categorySelect').value;
+            const amount = parseFloat(spendAmountInput.value);
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid spend amount (positive number).');
+                return;
+            }
+
+            const newSpend = {
+                category: category,
+                amount: amount,
+                // FIX: Use new Date() instead of FieldValue.serverTimestamp() directly in array
+                timestamp: firebase.firestore.Timestamp.fromDate(new Date()) // Store as Firestore Timestamp
+            };
+
+            const dailyLimitDocRef = db.collection('users').doc(userId).collection('dailyLimits').doc('current');
+
+            dailyLimitDocRef.get().then(doc => {
+                let spends = [];
+                let currentLimitData = {};
+
+                if (doc.exists) {
+                    currentLimitData = doc.data();
+                    const lastSpendDate = currentLimitData.lastSpendDate;
+                    const todayDateString = new Date().toISOString().split('T')[0];
+
+                    // If the last recorded spend date is not today, clear previous day's spends
+                    if (lastSpendDate === todayDateString) {
+                        spends = currentLimitData.spends || [];
+                    } else {
+                        spends = []; // Clear for new day
+                        currentLimitData.lastSpendDate = todayDateString;
+                    }
+                } else {
+                    currentLimitData.lastSpendDate = new Date().toISOString().split('T')[0];
+                    currentLimitData.limit = 0; // Initialize limit if document doesn't exist
+                }
+
+                spends.push(newSpend);
+                currentLimitData.spends = spends;
+
+                return dailyLimitDocRef.set(currentLimitData, { merge: true });
+            })
+            .then(() => {
+                console.log("Spend added to Firestore!");
+                alert("Spend added successfully!");
+                updateRemainingBalance();
+                renderSpendList();
+                spendAmountInput.value = '';
+            })
+            .catch(error => {
+                console.error("Error adding spend: ", error);
+                alert("Error adding spend: " + error.message);
+            });
+        });
+
+        function updateRemainingBalance() {
+            db.collection('users').doc(userId).collection('dailyLimits').doc('current').get()
+                .then(doc => {
+                    const remainingBalanceElem = document.getElementById('remainingBalance');
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const limit = parseFloat(data.limit || 0);
+                        const spends = data.spends || [];
+
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const todaysSpends = spends.filter(spend => {
+                            if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+                                const spendDate = spend.timestamp.toDate();
+                                spendDate.setHours(0,0,0,0);
+                                return spendDate.getTime() === today.getTime();
+                            }
+                            return false;
+                        });
+
+                        const totalSpent = todaysSpends.reduce((sum, item) => sum + item.amount, 0);
+                        const remaining = (limit - totalSpent).toFixed(2);
+
+                        const remainingText = remaining >= 0
+                            ? `✅ You have ₹${remaining} remaining today.`
+                            : `⚠️ You have exceeded your daily limit by ₹${Math.abs(remaining)}.`;
+
+                        remainingBalanceElem.textContent = remainingText;
+                    } else {
+                        remainingBalanceElem.textContent = `Please set your daily limit.`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error updating remaining balance from Firestore: ", error);
+                    document.getElementById('remainingBalance').textContent = `Error loading balance.`;
+                });
+        }
+
+        function renderSpendList() {
+            const spendList = document.getElementById('spendList');
+            spendList.innerHTML = "";
+
+            db.collection('users').doc(userId).collection('dailyLimits').doc('current').get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const spends = data.spends || [];
+
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const todaysSpends = spends.filter(spend => {
+                            if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
+                                const spendDate = spend.timestamp.toDate();
+                                spendDate.setHours(0,0,0,0);
+                                return spendDate.getTime() === today.getTime();
+                            }
+                            return false;
+                        });
+
+                        todaysSpends.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate()); // Sort by newest first
+
+                        if (todaysSpends.length === 0) {
+                            spendList.innerHTML = '<li class="text-gray-500 text-center">No spends recorded for today.</li>';
+                        } else {
+                            todaysSpends.forEach(spend => {
+                                const li = document.createElement('li');
+                                li.className = "bg-gray-100 p-3 rounded-lg shadow flex justify-between items-center";
+                                const spendTime = spend.timestamp && typeof spend.timestamp.toDate === 'function'
+                                    ? spend.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) // Added hour12 for AM/PM
+                                    : '';
+                                li.innerHTML = `<span>${spend.category} (${spendTime})</span><span>₹${spend.amount.toFixed(2)}</span>`;
+                                spendList.appendChild(li);
+                            });
+                        }
+                    } else {
+                        spendList.innerHTML = '<li class="text-gray-500 text-center">No spends recorded for today.</li>';
+                    }
+                })
+                .catch(error => {
+                    console.error("Error rendering spend list from Firestore: ", error);
+                    spendList.innerHTML = '<li class="text-red-500 text-center">Error loading spends.</li>';
+                });
+        }
+
+        // Initial call to load data for the authenticated user
+        getDailyLimit();
+    }
+
+    // Function to set today's date display (always visible)
+    function setTodayDate() {
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('en-GB', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        document.getElementById('todayDate').textContent = `📅 Today: ${formattedDate}`;
+    }
+
+    // Call setTodayDate immediately on page load, even before authentication is confirmed
+    setTodayDate();
+
+    // Initial state setup before onAuthStateChanged resolves
+    setUIState(false);
+  </script>
+</body>
+</html>

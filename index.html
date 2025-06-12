@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .gradient-bg {
+      background: linear-gradient(to right, #cb5ddc, #8B5CF6);
+    }
+    
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      min-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    
+    .profile-dropdown a {
+      display: block;
+      padding: 10px 15px;
+      color: #4b5563;
+      text-decoration: none;
+    }
+    
+    .profile-dropdown a:hover {
+      background: #f3f4f6;
+    }
+    
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
+  <!-- Header -->
+  <header class="gradient-bg text-white py-5 shadow-lg">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">💰 Finance Tracker</h1>
+      <nav class="flex items-center">
+        <!-- These will be shown when user is not logged in -->
+        <div id="guest-nav" class="flex">
+          <a href="log.html" class="mx-2 hover:underline text-lg">Login</a>
+          <a href="register.html" class="mx-2 hover:underline text-lg">Register</a>
+        </div>
+        
+        <!-- This will be shown when user is logged in -->
+        <div id="user-nav" class="hidden">
+          <div class="profile-container relative">
+            <button class="flex items-center space-x-2 focus:outline-none">
+              <span id="username-display" class="text-lg">User</span>
+              <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+                <span id="user-initial">U</span>
+              </div>
+            </button>
+            <div class="profile-dropdown">
+              <a href="profile.html">👤 My Profile</a>
+              <a href="setting.html">⚙️ Settings</a>
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="container mx-auto px-4 py-12">
+    <!-- Hero Section -->
+    <section class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-indigo-600 mb-4">Take Control of Your Money</h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Set limits, track spending, save smarter — all in one beautiful dashboard.
+      </p>
+    </section>
+
+    <!-- Flash Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Daily Limit -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer" >
+        <a href= "daily_limit.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📆 Daily Limit</h3></a>
+          <a href= "daily_limit.html"> <p class="text-gray-600">Set daily limits to better manage daily spending.</p></a>
+      </div>
+      <!-- Monthly Limit -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer" >
+        <a href= "monthly_limit.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📅 Monthly Limit</h3></a>
+        <a href= "monthly_limit.html"><p class="text-gray-600">Plan and track how much you can spend this month.</p></a>
+      </div>
+
+      <!-- Spending Statistics -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
+        <a href= "statistic.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📊 Spending Statistics</h3></a>
+        <a href= "statistic.html"> <p class="text-gray-600">Visualize your expenses with charts and analytics.</p></a>
+      </div>
+
+      <!-- Savings -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
+        <a href= "saving.html"> <h3 class="text-2xl font-semibold mb-2 text-indigo-600">💸 Savings</h3></a>
+        <a href= "saving.html"> <p class="text-gray-600">Keep track of your monthly savings goals.</p></a>
+      </div>
+
+      <!-- Monthly Reminders -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
+        <a href= "monthly-reminderr.html"><h3 class="font-semibold mb-2 text-indigo-600">🔔 Monthly Reminders</h3></a>
+        <a href= "monthly-reminderr.html"><p class="text-gray-600">Get notified about upcoming payments and limits.</p></a>
+      </div>
+
+      <!-- Miscellaneous Spending -->
+      <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
+        <a href= "Miscellaneous.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">🧾 Miscellaneous Spends</h3></a>
+        <a href= "Miscellaneous.html"> <p class="text-gray-600">Log other random expenses that don't fit categories.</p></a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="gradient-bg text-white text-center py-5 mt-12 shadow-inner">
+    <p class="text-lg">&copy; 2025 Finance Tracker. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+      authDomain: "self-finance-13029.firebaseapp.com",
+      projectId: "self-finance-13029",
+      storageBucket: "self-finance-13029.appspot.com",
+      messagingSenderId: "233384300457",
+      appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+      measurementId: "G-QT3K94SFZ3"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Check auth state
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // User is signed in
+        document.getElementById('guest-nav').classList.add('hidden');
+        document.getElementById('user-nav').classList.remove('hidden');
+        
+        // Display user info
+        const displayName = user.displayName || user.email.split('@')[0];
+        document.getElementById('username-display').textContent = displayName;
+        document.getElementById('user-initial').textContent = displayName.charAt(0).toUpperCase();
+        
+        // You can fetch additional user data from Firestore here if needed
+      } else {
+        // User is signed out
+        document.getElementById('guest-nav').classList.remove('hidden');
+        document.getElementById('user-nav').classList.add('hidden');
+      }
+    });
+
+    // Logout function
+    document.getElementById('logout-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      auth.signOut().then(() => {
+        window.location.href = 'log.html';
+      }).catch(error => {
+        console.error('Logout error:', error);
+      });
+    });
+  </script>
+</body>
+</html>
