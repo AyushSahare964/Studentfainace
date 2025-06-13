@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us - Finance Tracker</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs (for consistent header) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background-color: #f0f4f8; /* Consistent light background */
+    }
+
+    .gradient-bg {
+      background: linear-gradient(to right, #4facfe, #00f2fe); /* Consistent header gradient */
+    }
+
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      min-width: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    
+    .profile-dropdown a {
+      display: block;
+      padding: 10px 15px;
+      color: #4b5563;
+      text-decoration: none;
+    }
+    
+    .profile-dropdown a:hover {
+      background: #f3f4f6;
+    }
+    
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex flex-col">
+
+<!-- Header (consistent with other pages) -->
+<header class="gradient-bg text-white py-5 shadow-lg">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+    <h1 class="text-3xl font-bold">💰 Finance Tracker</h1>
+    <nav class="flex items-center">
+      <div id="guest-nav" class="flex">
+        <a href="log.html" class="mx-2 hover:underline text-lg">Login</a>
+        <a href="register.html" class="mx-2 hover:underline text-lg">Register</a>
+      </div>
+      <div id="user-nav" class="hidden">
+        <div class="profile-container relative">
+          <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
+            <span id="username-display" class="text-lg">User</span>
+            <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+              <span id="user-initial">U</span>
+            </div>
+          </button>
+           <div class="profile-dropdown">
+              <a href="index.html">🏠 Home</a>
+              <a href="profile.html">👤 My Profile</a>
+              <a href="settings.html">⚙️ Settings</a>
+              <a href="about.html">ℹ️ About Us</a> <!-- Moved About Us here -->
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="flex-grow container mx-auto px-4 py-12">
+  <section class="text-center bg-white rounded-xl shadow-xl p-8 sm:p-10 lg:p-12">
+    <h2 class="text-4xl font-bold text-indigo-600 mb-6">About This Project</h2>
+    <p class="text-gray-700 text-lg mb-6 max-w-3xl mx-auto leading-relaxed">
+      This Finance Tracker is a comprehensive web application designed to empower users with better control over their personal finances.
+      It enables you to set daily and monthly spending limits, track expenses by category, visualize spending patterns,
+      monitor savings goals, and manage miscellaneous outlays. Our goal is to provide a simple yet powerful tool to help you achieve financial wellness.
+    </p>
+
+    <div class="mb-8 p-6 sm:p-8 bg-blue-50 rounded-lg shadow-sm text-center">
+      <p class="text-gray-800 text-xl font-semibold mb-3">Developed By:</p>
+      <p class="text-gray-700 text-lg mb-2">
+        Students of <strong>Vishwakarma Institute of Technology, Pune</strong>
+      </p>
+      <p class="text-gray-700 text-lg font-medium mb-4">
+        Branch: Instrumentation and Control, Division: C
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left max-w-2xl mx-auto">
+        <div class="bg-gray-100 p-4 rounded-lg shadow-inner flex flex-col items-center text-center">
+          <strong class="text-blue-700 mb-1">Main Developer:</strong> 
+          <span class="font-medium">Ayush Mahendra Sahare</span> (PRN: 12410399)<br>
+          <a href="https://www.linkedin.com/in/ayush-sahare-8204292b8" target="_blank" class="text-blue-500 hover:underline mt-2">LinkedIn Profile</a>
+        </div>
+        <div class="bg-gray-100 p-4 rounded-lg shadow-inner md:col-span-2 flex flex-col items-center text-center">
+          <strong class="text-blue-700 mb-1">Assistance Developers:</strong>
+          <ul class="list-none p-0 mt-2 space-y-1">
+            <li>Samyak Malame (PRN: 12411081)</li>
+            <li>Aditya Sankpal (PRN: 12413937)</li>
+            <li>Samruddhi Shinde (PRN: 12412444)</li>
+            <li>Sameer Sangewar (PRN: 12413944)</li>
+            <li>Sanskruti Ruyarkar (PRN: 12410726)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 p-6 sm:p-8 bg-purple-50 rounded-lg shadow-sm text-center">
+      <p class="text-gray-800 text-xl font-semibold mb-3">Project Guide:</p>
+      <p class="text-gray-700 text-lg">Prof. Aparna Shendkar</p>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="gradient-bg text-white text-center py-5 mt-12 shadow-inner">
+  <p class="text-lg">&copy; 2025 Finance Tracker. All rights reserved.</p>
+</footer>
+
+<script>
+  // Firebase configuration (ensure it matches your project's config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGKPCg1tzXvIXs9DMAed5SxWWAng43O-8",
+    authDomain: "self-finance-13029.firebaseapp.com",
+    projectId: "self-finance-13029",
+    storageBucket: "self-finance-13029.appspot.com",
+    messagingSenderId: "233384300457",
+    appId: "1:233384300457:web:e1b17b44c88fdac89f7eb8",
+    measurementId: "G-QT3K94SFZ3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+
+  // Header elements for consistent display
+  const guestNav = document.getElementById('guest-nav');
+  const userNav = document.getElementById('user-nav');
+  const usernameDisplay = document.getElementById('username-display');
+  const userInitial = document.getElementById('user-initial');
+  const logoutBtn = document.getElementById('logout-btn');
+  const profileButton = document.getElementById('profile-button');
+
+  // --- Authentication State Listener (for consistent header) ---
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // User is signed in
+      guestNav.classList.add('hidden');
+      userNav.classList.remove('hidden');
+      const displayName = user.displayName || user.email.split('@')[0];
+      usernameDisplay.textContent = displayName;
+      userInitial.textContent = displayName.charAt(0).toUpperCase();
+    } else {
+      // No user is signed in
+      guestNav.classList.remove('hidden');
+      userNav.classList.add('hidden');
+    }
+  });
+
+  // --- Logout Functionality (for consistent header) ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await auth.signOut();
+        // Redirect to login page after logout
+        window.location.href = 'log.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('Error logging out: ' + error.message);
+      }
+    });
+  }
+
+  // Toggle profile dropdown on click for mobile/touch devices (for consistent header)
+  if (profileButton) {
+    profileButton.addEventListener('click', () => {
+      const dropdown = profileButton.nextElementSibling;
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    });
+    document.addEventListener('click', (event) => {
+      const dropdown = profileButton.nextElementSibling;
+      if (dropdown && dropdown.style.display === 'block' && !profileButton.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+  }
+</script>
+</body>
+</html>
