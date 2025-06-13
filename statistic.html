@@ -22,20 +22,21 @@
   <style>
     body {
       font-family: 'Poppins', Arial, sans-serif;
-      margin: 0;
+      margin: 0; /* Removed default body margin */
       background-color: #f0f4f8;
       text-align: center;
     }
 
+    /* Header styling from your previous files */
     .gradient-bg {
-      background: linear-gradient(to right, #6EE7B7, #3B82F6);
+      background: linear-gradient(to right, #4facfe, #00f2fe); /* Consistent header gradient */
     }
 
     h1 {
       color: #2c3e50;
       font-size: 2.5rem;
       margin-bottom: 20px;
-      padding-top: 20px;
+      padding-top: 20px; /* Add padding for content below header */
     }
 
     h2 {
@@ -50,18 +51,18 @@
       gap: 20px;
       justify-content: center;
       margin-bottom: 40px;
-      padding: 0 10px;
+      padding: 0 10px; /* Add padding to prevent cards from touching screen edges */
     }
 
     .card {
       background: white;
       padding: 20px;
-      width: 100%;
-      max-width: 320px;
+      width: 100%; /* Default to full width on small screens */
+      max-width: 320px; /* Max width for larger screens */
       border-radius: 20px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       text-align: center;
-      box-sizing: border-box;
+      box-sizing: border-box; /* Include padding in width */
     }
 
     .card h3 {
@@ -78,8 +79,8 @@
 
     .chart-container {
       position: relative;
-      width: 95%;
-      max-width: 600px;
+      width: 95%; /* Make it more responsive */
+      max-width: 600px; /* Increased max-width for better chart display */
       margin: 30px auto;
       background: #ffffff;
       padding: 20px;
@@ -90,21 +91,21 @@
 
     canvas {
       width: 100% !important;
-      height: auto !important;
+      height: auto !important; /* Ensure canvas scales properly */
     }
 
-    @media (min-width: 640px) {
+    @media (min-width: 640px) { /* Tailwind's 'sm' breakpoint */
       .card-container {
-        justify-content: space-around;
+        justify-content: space-around; /* Distribute cards on larger screens */
       }
       .card {
-        width: calc(50% - 20px);
+        width: calc(50% - 20px); /* Two cards per row with gap */
       }
     }
 
-    @media (min-width: 1024px) {
+    @media (min-width: 1024px) { /* Tailwind's 'lg' breakpoint */
       .card {
-        width: calc(33.33% - 20px);
+        width: calc(33.33% - 20px); /* Three cards per row with gap */
       }
     }
 
@@ -125,7 +126,20 @@
       color: #4f46e5;
     }
 
-    /* Profile Dropdown Styles */
+    /* Table styling - Removed as per request */
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 9999px; /* Full pill shape */
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        display: inline-block; /* Allows padding to apply */
+    }
+    .status-green { background-color: #10B981; } /* Tailwind green-500 */
+    .status-red { background-color: #EF4444; } /* Tailwind red-500 */
+
+    /* Profile Dropdown Styles (consistent with other pages) */
     .profile-container {
       position: relative;
     }
@@ -158,6 +172,7 @@
       display: block;
     }
     /* For touch devices, consider adding JS to toggle visibility on click */
+
   </style>
 </head>
 
@@ -184,11 +199,13 @@
               <span id="user-initial">U</span>
             </div>
           </button>
-          <div class="profile-dropdown">
-            <a href="index.html">🏠 Home</a>
-            <a href="profile.html">👤 My Profile</a>
-            <a href="setting.html">⚙️ Settings</a>
-            <a href="#" id="logout-btn">🚪 Logout</a>
+           <div class="profile-dropdown">
+              <a href="index.html">🏠 Home</a>
+              <a href="profile.html">👤 My Profile</a>
+              <a href="setting.html">⚙️ Settings</a>
+              <a href="about.html">ℹ️ About Us</a> <!-- Moved About Us here -->
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
           </div>
         </div>
       </div>
@@ -299,6 +316,14 @@
 
   let expenseChart = null; // To hold the Chart.js instance
 
+  // --- Utility Functions ---
+  function getLocalDateKey(dateObject) {
+    const year = dateObject.getFullYear();
+    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
+    const day = dateObject.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`; // Format: YYYY-MM-DD
+  }
+
   // --- Authentication State Listener ---
   auth.onAuthStateChanged(user => {
     if (user) {
@@ -389,19 +414,30 @@
     if (!userId) return; // Should not be called without userId due to onAuthStateChanged guard
 
     try {
-      // 1. Fetch Daily Limits and Spends
+      // 1. Fetch Daily Limits and Spends (including spendsByDate)
       const dailyLimitDocRef = db.collection('users').doc(userId).collection('dailyLimits').doc('current');
       const dailyLimitDoc = await dailyLimitDocRef.get();
 
       let dailyLimit = 0;
-      let allSpends = [];
-      // let lastSetDate = ''; // Not used in this context
-
+      let spendsByDateData = {}; // This will hold the spendsByDate map
+      
       if (dailyLimitDoc.exists) {
         const data = dailyLimitDoc.data();
         dailyLimit = parseFloat(data.limit || 0);
-        allSpends = data.spends || [];
-        // lastSetDate = data.lastSetDate || ''; // Not used
+        spendsByDateData = data.spendsByDate || {}; // Get the spendsByDate map
+      }
+
+      // Consolidate all categorized daily spends into a single array for easier processing
+      let allCategorizedDailySpends = [];
+      for (const dateKey in spendsByDateData) {
+        if (Object.prototype.hasOwnProperty.call(spendsByDateData, dateKey)) {
+          const dailySpendsArray = spendsByDateData[dateKey];
+          if (Array.isArray(dailySpendsArray)) {
+            dailySpendsArray.forEach(spend => {
+              allCategorizedDailySpends.push({ ...spend, date: dateKey }); // Add date for filtering
+            });
+          }
+        }
       }
 
       // 2. Fetch Miscellaneous Spends
@@ -418,18 +454,26 @@
       // Today's Summary
       const today = new Date();
       today.setHours(0,0,0,0); // Normalize to start of day for comparison
+      const todayDateKey = getLocalDateKey(today);
 
-      const todaysSpends = allSpends.filter(spend => {
-        // Ensure timestamp is a Firestore Timestamp object and convert to Date for comparison
-        if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-          const spendDate = spend.timestamp.toDate();
-          spendDate.setHours(0,0,0,0);
-          return spendDate.getTime() === today.getTime();
+      // Filter categorized daily spends for today
+      const todaysCategorizedSpends = allCategorizedDailySpends.filter(spend => spend.date === todayDateKey);
+
+      // Filter miscellaneous spends for today
+      const todaysMiscellaneousSpends = miscellaneousSpends.filter(miscSpend => {
+        // Handle both timestamp and date string for misc spends for robustness
+        if (miscSpend.timestamp && typeof miscSpend.timestamp.toDate === 'function') {
+          const miscSpendDate = miscSpend.timestamp.toDate();
+          miscSpendDate.setHours(0,0,0,0);
+          return miscSpendDate.getTime() === today.getTime();
+        } else if (miscSpend.date === todayDateKey) {
+          return true;
         }
         return false;
       });
 
-      const totalToday = todaysSpends.reduce((sum, item) => sum + item.amount, 0);
+      const totalToday = todaysCategorizedSpends.reduce((sum, item) => sum + item.amount, 0) +
+                         todaysMiscellaneousSpends.reduce((sum, item) => sum + item.amount, 0);
       const remainingToday = (dailyLimit - totalToday).toFixed(2);
 
       dailySummaryDisplay.textContent = `₹${totalToday.toFixed(2)}`;
@@ -442,27 +486,33 @@
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       let totalSpentThisMonth = 0;
-      let totalSavingsThisMonth = 0; // New variable for monthly savings
+      let totalSavingsThisMonth = 0; 
       let daysWithSpendSet = new Set(); // To count distinct days with spend
 
       // Calculate total daily categorized spends for the current month
-      allSpends.forEach(spend => {
-        if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-          const spendDate = spend.timestamp.toDate();
-          if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
-            totalSpentThisMonth += spend.amount;
-            daysWithSpendSet.add(spendDate.toISOString().split('T')[0]); // Add unique date string
-          }
+      allCategorizedDailySpends.forEach(spend => {
+        // Date is already in YYYY-MM-DD from the object
+        const spendDate = new Date(spend.date + 'T00:00:00'); // Parse as Date
+        if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
+          totalSpentThisMonth += spend.amount;
+          daysWithSpendSet.add(spend.date); // Add unique date string
         }
       });
 
       // Add miscellaneous spends to monthly total
       miscellaneousSpends.forEach(spend => {
+          let spendDate;
           if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-              const spendDate = spend.timestamp.toDate();
-              if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
-                  totalSpentThisMonth += spend.amount;
-              }
+            spendDate = spend.timestamp.toDate();
+          } else if (spend.date) {
+            spendDate = new Date(spend.date + 'T00:00:00');
+          } else {
+            return; // Skip if no valid date information
+          }
+
+          if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
+              totalSpentThisMonth += spend.amount;
+              daysWithSpendSet.add(getLocalDateKey(spendDate)); // Ensure date is added to set
           }
       });
 
@@ -476,21 +526,18 @@
           }
       });
 
-
       monthlyTotal.textContent = `₹${totalSpentThisMonth.toFixed(2)}`; // Now includes daily and misc spends
       daysWithSpendCount.textContent = daysWithSpendSet.size;
       
-      // Corrected Average Daily calculation: Divide by the number of days passed in the current month (including today)
-      const numberOfDaysInMonthSoFar = today.getDate(); // Gives the day number (e.g., 1 for 1st, 15 for 15th)
+      const numberOfDaysInMonthSoFar = today.getDate(); 
       if (numberOfDaysInMonthSoFar > 0) {
-        // This average is still only for spends, not savings
         monthlyAverage.textContent = `₹${(totalSpentThisMonth / numberOfDaysInMonthSoFar).toFixed(2)}`; 
       } else {
         monthlyAverage.textContent = '₹0.00'; 
       }
 
 
-      // Miscellaneous Spends
+      // Miscellaneous Spends List
       let totalMisc = 0;
       miscellaneousSpendList.innerHTML = ''; // Clear previous list
       if (miscellaneousSpends.length === 0) {
@@ -499,8 +546,8 @@
       } else {
         // Sort miscellaneous spends by timestamp (newest first)
         miscellaneousSpends.sort((a, b) => {
-            const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : 0;
-            const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : 0;
+            const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : (new Date(a.date)).getTime() || 0;
+            const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : (new Date(b.date)).getTime() || 0;
             return timeB - timeA;
         });
 
@@ -508,10 +555,10 @@
           totalMisc += spend.amount;
           const li = document.createElement('li');
           li.className = "misc-item";
-          // Format date for display from timestamp
+          // Format date for display from timestamp or date string
           const displayDate = spend.timestamp && typeof spend.timestamp.toDate === 'function' 
-                              ? spend.timestamp.toDate().toLocaleDateString('en-GB') 
-                              : (new Date(spend.date + 'T00:00:00')).toLocaleDateString('en-GB'); // Fallback to date string if timestamp is missing or invalid
+                               ? spend.timestamp.toDate().toLocaleDateString('en-GB') 
+                               : (spend.date ? (new Date(spend.date + 'T00:00:00')).toLocaleDateString('en-GB') : 'N/A'); 
           li.innerHTML = `<span>${spend.title}</span>: ₹${spend.amount.toFixed(2)} <br><small>Date: ${displayDate}</small>`;
           miscellaneousSpendList.appendChild(li);
         });
@@ -531,19 +578,12 @@
 
       // --- Prepare data for Pie Chart (Today's Spending Breakdown) ---
       const categoryBreakdownToday = {};
-      todaysSpends.forEach(spend => {
+      
+      todaysCategorizedSpends.forEach(spend => {
         categoryBreakdownToday[spend.category] = (categoryBreakdownToday[spend.category] || 0) + spend.amount;
       });
 
-      // Also add today's miscellaneous spends to the pie chart
-      miscellaneousSpends.filter(spend => {
-        if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-            const spendDate = spend.timestamp.toDate();
-            spendDate.setHours(0,0,0,0);
-            return spendDate.getTime() === today.getTime();
-        }
-        return false;
-      }).forEach(miscSpend => {
+      todaysMiscellaneousSpends.forEach(miscSpend => {
           const category = miscSpend.category || 'Miscellaneous'; // Use 'Miscellaneous' as category if not specified
           categoryBreakdownToday[category] = (categoryBreakdownToday[category] || 0) + miscSpend.amount;
       });
@@ -561,8 +601,8 @@
       daysWithSpendCount.textContent = 'Error';
       miscTotal.textContent = 'Error';
       miscellaneousSpendList.innerHTML = '<li>Error loading miscellaneous spends.</li>';
-      monthlySavingDisplay.textContent = 'Error'; // Clear new savings display
-      totalSavingsGoalsDisplay.textContent = 'Error'; // Clear new savings display
+      monthlySavingDisplay.textContent = 'Error'; 
+      totalSavingsGoalsDisplay.textContent = 'Error'; 
     }
   }
 
