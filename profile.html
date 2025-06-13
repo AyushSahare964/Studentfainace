@@ -214,12 +214,13 @@
               <span id="user-initial">U</span>
             </div>
           </button>
-          <div class="profile-dropdown">
-            <a href="index.html">🏠 Home</a>
-            <a href="profile.html">👤 My Profile</a>
-            <a href="setting.html">⚙️ Settings</a>
-            <a href="#" id="logout-btn">🚪 Logout</a>
-          </div>
+           <div class="profile-dropdown">
+              <a href="index.html">🏠 Home</a>
+              <a href="profile.html">👤 My Profile</a>
+              <a href="settings.html">⚙️ Settings</a>
+              <a href="about.html">ℹ️ About Us</a> <!-- Moved About Us here -->
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
         </div>
       </div>
     </nav>
@@ -557,7 +558,8 @@
         privacySelect.value = data.privacy || 'Private';
 
         if (data.profilePictureUrl) {
-          profileImage.src = data.profilePictureUrl;
+          // Add cache-buster to ensure the latest image is fetched
+          profileImage.src = `${data.profilePictureUrl}?t=${new Date().getTime()}`;
         } else {
             profileImage.src = "https://placehold.co/120x120/E0F2FE/2563EB?text=U";
         }
@@ -625,7 +627,8 @@
     try {
       await storageRef.put(file);
       const downloadURL = await storageRef.getDownloadURL();
-      profileImage.src = downloadURL;
+      // Add cache-buster to ensure the latest image is displayed
+      profileImage.src = `${downloadURL}?t=${new Date().getTime()}`;
 
       await db.collection('users').doc(userId).collection('profile').doc('current').set({
         profilePictureUrl: downloadURL
