@@ -40,8 +40,15 @@
       font-weight: 600; /* Poppins semi-bold */
       margin-bottom: 1.5rem;
     }
-    h1 { font-size: 2.25rem; } /* text-4xl */
-    h2 { font-size: 1.75rem; } /* text-2xl */
+    /* Adjusted font sizes for responsiveness */
+    h1 { font-size: 1.75rem; } /* text-3xl for small, default 2.25rem */
+    @media (min-width: 640px) { /* sm breakpoint */
+      h1 { font-size: 2.25rem; } /* sm:text-4xl */
+    }
+    h2 { font-size: 1.5rem; } /* text-xl for small, default 1.75rem */
+    @media (min-width: 640px) { /* sm breakpoint */
+      h2 { font-size: 1.75rem; } /* sm:text-2xl */
+    }
 
     /* Form input styling */
     input[type="number"],
@@ -51,10 +58,19 @@
       border-radius: 0.75rem; /* rounded-xl */
       border: 2px solid #e2e8f0; /* border-2 border-gray-200 */
       margin-bottom: 1rem; /* mb-4 */
-      font-size: 1rem;
+      font-size: 1rem; /* base font size */
       color: #374151; /* text-gray-700 */
       transition: all 0.2s ease-in-out;
     }
+    /* Smaller text for inputs on smaller screens */
+    @media (max-width: 639px) { /* below sm breakpoint */
+      input[type="number"],
+      select {
+        font-size: 0.9rem; /* text-sm */
+        padding: 0.625rem; /* p-2.5 */
+      }
+    }
+
     input:focus, select:focus {
       outline: none;
       border-color: #6366f1; /* focus:ring-4 focus:ring-blue-400 */
@@ -75,7 +91,16 @@
       font-weight: 700; /* font-bold */
       transition: background-color 0.3s ease, transform 0.1s ease;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-size: 1rem; /* base font size */
     }
+    /* Smaller text for buttons on smaller screens */
+    @media (max-width: 639px) { /* below sm breakpoint */
+      .btn-primary {
+        font-size: 0.9rem; /* text-sm */
+        padding: 0.625rem 1rem; /* py-2.5 px-4 */
+      }
+    }
+
     .btn-primary:hover {
       background-color: #1d4ed8; /* hover:bg-blue-600 */
       transform: translateY(-1px);
@@ -89,6 +114,13 @@
       text-align: center;
       margin-bottom: 1rem; /* mb-4 */
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      font-size: 0.875rem; /* text-sm */
+    }
+    /* Larger text for message-box on larger screens */
+    @media (min-width: 640px) { /* sm breakpoint */
+      .message-box {
+        font-size: 1rem; /* sm:text-base */
+      }
     }
     .message-box.error {
         background-color: #fee2e2; /* light red */
@@ -117,8 +149,13 @@
       padding: 0.75rem 1rem; /* py-3 px-4 */
       color: #4B5563; /* gray-700 */
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.9rem; /* base dropdown item size */
       transition: background-color 0.2s ease;
+    }
+    @media (min-width: 640px) { /* sm breakpoint */
+      .profile-dropdown a {
+        font-size: 1rem; /* sm:text-base */
+      }
     }
     .profile-dropdown a:hover {
       background-color: #F3F4F6; /* gray-100 */
@@ -137,22 +174,22 @@
 
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 min-h-screen flex flex-col">
 
-  <header class="gradient-bg text-white py-6 shadow-lg">
-    <div class="container mx-auto px-6 flex justify-between items-center">
-      <h1 class="text-3xl font-extrabold tracking-wide">☀️ Daily Limit & Spend</h1>
-      <nav class="flex items-center space-x-4">
+  <header class="gradient-bg text-white py-4 sm:py-6 shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide">☀️ Daily Limit & Spend</h1>
+      <nav class="flex items-center space-x-2 sm:space-x-4">
         <!-- This will be shown when user is NOT logged in -->
-        <div id="guest-nav" class="flex space-x-4">
-          <a href="log.html" class="text-white hover:underline text-lg">Login</a>
-          <a href="register.html" class="text-white hover:underline text-lg">Register</a>
+        <div id="guest-nav" class="flex space-x-2 sm:space-x-4">
+          <a href="log.html" class="text-white hover:underline text-base sm:text-lg">Login</a>
+          <a href="register.html" class="text-white hover:underline text-base sm:text-lg">Register</a>
         </div>
 
         <!-- This will be shown when user is logged in -->
         <div id="user-nav" class="hidden">
           <div class="profile-container relative">
-            <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
-              <span id="username-display" class="text-lg">User</span>
-              <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+            <button id="profile-button" class="flex items-center space-x-1 sm:space-x-2 focus:outline-none">
+              <span id="username-display" class="text-base sm:text-lg">User</span>
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold text-base sm:text-lg">
                 <span id="user-initial">U</span>
               </div>
             </button>
@@ -160,7 +197,7 @@
               <a href="index.html">🏠 Home</a>
               <a href="profile.html">👤 My Profile</a>
               <a href="setting.html">⚙️ Settings</a>
-              <a href="about.html">ℹ️ About Us</a> <!-- Moved About Us here -->
+              <a href="about.html">ℹ️ About Us</a>
               <a href="#" id="logout-btn">🚪 Logout</a>
             </div>
           </div>
@@ -169,28 +206,28 @@
     </div>
   </header>
 
-  <main class="flex-grow container mx-auto px-6 py-10 flex flex-col items-center justify-center">
+  <main class="flex-grow container mx-auto px-4 sm:px-6 py-8 sm:py-10 flex flex-col items-center justify-center">
 
-    <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-8 text-center max-w-xl mx-auto" role="alert" style="display: none;">
+    <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 sm:px-4 sm:py-3 rounded relative mb-6 sm:mb-8 text-center max-w-xl mx-auto text-sm sm:text-base" role="alert" style="display: none;">
       <strong class="font-bold">Access Denied:</strong>
       <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to manage your daily limits and spends.</span>
     </div>
 
-    <div id="mainContentWrapper" class="flex flex-col gap-8 max-w-xl w-full">
+    <div id="mainContentWrapper" class="flex flex-col gap-6 sm:gap-8 max-w-md w-full">
 
-      <div class="text-center text-xl font-medium text-gray-700 mb-4">
+      <div class="text-center text-lg sm:text-xl font-medium text-gray-700 mb-2 sm:mb-4">
         <p id="todayDate"></p>
       </div>
 
       <!-- Set Daily Limit Card -->
       <div id="setLimitCard" class="card-section">
-        <h2 class="text-2xl font-semibold mb-4 text-center">Set Your Daily Limit</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-center">Set Your Daily Limit</h2>
         <div id="setLimitMessage" class="message-box hidden"></div>
-        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <input type="number" id="dailyLimitInput" placeholder="Enter daily limit (e.g., 500)"
                  class="flex-grow" min="0" step="any">
           <button id="setLimitBtn"
-                  class="btn-primary w-full sm:w-auto px-8 py-3 whitespace-nowrap">
+                  class="btn-primary w-full sm:w-auto px-6 py-2 sm:px-8 sm:py-3 whitespace-nowrap">
             Set Limit
           </button>
         </div>
@@ -198,24 +235,24 @@
 
       <!-- Daily Overview Card -->
       <div id="dailyOverviewCard" class="card-section">
-        <h2 class="text-2xl font-semibold mb-4 text-center">Today's Spend Overview</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-center">Today's Spend Overview</h2>
         <div id="spendMessage" class="message-box hidden"></div>
         
-        <p class="text-lg font-bold mb-4 text-center">
+        <p class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-center">
             Daily Limit: <span id="currentDailyLimitDisplay" class="text-blue-600">₹0.00</span>
         </p>
-        <p class="text-lg font-bold mb-4 text-center">
+        <p class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-center">
             Total Spent: <span id="totalSpentDisplay" class="text-red-600">₹0.00</span>
         </p>
-        <p class="text-xl font-bold mb-6 text-center">
+        <p class="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-center">
             Remaining: <span id="remainingBalanceDisplay" class="text-green-600">₹0.00</span>
         </p>
 
-        <h3 class="text-xl font-semibold mb-3 text-gray-700">Add New Spend</h3>
-        <form id="addSpendForm" class="space-y-4">
+        <h3 class="text-lg sm:text-xl font-semibold mt-4 sm:mt-6 mb-2 sm:mb-3 text-gray-700">Add New Spend</h3>
+        <form id="addSpendForm" class="space-y-3 sm:space-y-4">
           <div>
-            <label for="categorySelect" class="block text-gray-700 font-medium mb-1">Category</label>
-            <select id="categorySelect">
+            <label for="categorySelect" class="block text-gray-700 font-medium mb-1 text-base sm:text-lg">Category</label>
+            <select id="categorySelect" class="text-base sm:text-lg">
               <option value="">Select a category</option>
               <option value="Food">Food</option>
               <option value="Transport">Transport</option>
@@ -226,9 +263,9 @@
             </select>
           </div>
           <div>
-            <label for="spendAmountInput" class="block text-gray-700 font-medium mb-1">Amount (₹)</label>
+            <label for="spendAmountInput" class="block text-gray-700 font-medium mb-1 text-base sm:text-lg">Amount (₹)</label>
             <input type="number" id="spendAmountInput" placeholder="e.g., 150"
-                   min="0" step="any">
+                    min="0" step="any" class="text-base sm:text-lg">
           </div>
           <button type="submit" id="addSpendBtn"
                   class="btn-primary bg-green-500 hover:bg-green-600">
@@ -236,17 +273,17 @@
           </button>
         </form>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-700">Today's Spends</h3>
-        <ul id="spendList" class="space-y-3">
-          <li class="text-gray-500 text-center py-2">Loading today's spends...</li>
+        <h3 class="text-lg sm:text-xl font-semibold mt-6 mb-3 text-gray-700">Today's Spends</h3>
+        <ul id="spendList" class="space-y-2 sm:space-y-3 text-base sm:text-lg">
+          <li class="text-gray-500 text-center py-2 text-sm sm:text-base">Loading today's spends...</li>
         </ul>
       </div>
 
     </div>
   </main>
 
-  <footer class="gradient-bg text-white text-center py-5 mt-12 shadow-inner">
-    <p class="text-lg">&copy; 2024 Self Finance Tracker. All rights reserved.</p>
+  <footer class="gradient-bg text-white text-center py-4 sm:py-5 mt-8 sm:mt-12 shadow-inner">
+    <p class="text-base sm:text-lg">&copy; 2024 Self Finance Tracker. All rights reserved.</p>
   </footer>
 
   <script>
@@ -324,7 +361,7 @@
       const year = dateObject.getFullYear();
       const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
       const day = dateObject.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`; // Format:-MM-DD
+      return `${year}-${month}-${day}`; // Format:YYYY-MM-DD
     }
 
     function getTodayDateKey() {
@@ -346,7 +383,7 @@
         currentDailyLimitDisplay.textContent = 'Loading...';
         totalSpentDisplay.textContent = 'Loading...';
         remainingBalanceDisplay.textContent = 'Loading...';
-        spendList.innerHTML = '<li class="text-gray-500 text-center py-2">Loading spends...</li>';
+        spendList.innerHTML = '<li class="text-gray-500 text-center py-2 text-sm sm:text-base">Loading spends...</li>';
 
       } else {
         authMessage.style.display = 'block'; // Show login prompt
@@ -361,7 +398,7 @@
         currentDailyLimitDisplay.textContent = '₹0.00';
         totalSpentDisplay.textContent = '₹0.00';
         remainingBalanceDisplay.textContent = '₹0.00';
-        spendList.innerHTML = '<li class="text-gray-500 text-center py-2">Please log in to see your spends.</li>';
+        spendList.innerHTML = '<li class="text-gray-500 text-center py-2 text-sm sm:text-base">Please log in to see your spends.</li>';
       }
       setTodayDateDisplay(); // Always show today's date
     }
@@ -470,7 +507,7 @@
         currentDailyLimitDisplay.textContent = '₹0.00';
         totalSpentDisplay.textContent = '₹0.00';
         remainingBalanceDisplay.textContent = '₹0.00';
-        spendList.innerHTML = '<li class="text-red-500 text-center py-2">Error loading data.</li>';
+        spendList.innerHTML = '<li class="text-red-500 text-center py-2 text-sm sm:text-base">Error loading data.</li>';
       });
     }
 
@@ -533,13 +570,13 @@
       });
 
       if (sortedSpends.length === 0) {
-        spendList.innerHTML = '<li class="text-gray-500 text-center py-2">No spends recorded for today.</li>';
+        spendList.innerHTML = '<li class="text-gray-500 text-center py-2 text-sm sm:text-base">No spends recorded for today.</li>';
         return;
       }
 
       sortedSpends.forEach(spend => {
         const li = document.createElement('li');
-        li.className = "bg-gray-100 p-3 rounded-lg shadow flex justify-between items-center text-gray-700";
+        li.className = "bg-gray-100 p-3 rounded-lg shadow flex justify-between items-center text-gray-700 text-sm sm:text-base";
         
         // Ensure timestamp exists and is a Firestore Timestamp object before calling toDate()
         const spendTime = spend.timestamp && typeof spend.timestamp.toDate === 'function'
@@ -547,7 +584,7 @@
           : '';
 
         li.innerHTML = `
-          <span>${spend.category} <span class="text-sm text-gray-500">(${spendTime})</span></span>
+          <span>${spend.category} <span class="text-xs text-gray-500">(${spendTime})</span></span>
           <span class="font-semibold">₹${spend.amount.toFixed(2)}</span>
         `;
         spendList.appendChild(li);
