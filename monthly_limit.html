@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monthly Limit - Finance Tracker</title>
+  <title>Monthly Limit - Self Finance Tracker</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,13 +19,121 @@
   <style>
     body {
       font-family: 'Poppins', sans-serif;
+      background-color: #f0f4f8; /* Consistent light background */
     }
     .gradient-bg {
-      background: linear-gradient(to right, #34d399, #6366f1);
+      background: linear-gradient(to right, #4facfe, #00f2fe); /* Consistent header gradient */
     }
+    /* Common card styling for main sections */
+    .card-section {
+      background: white;
+      padding: 2.5rem; /* px-10 py-8 */
+      border-radius: 1.5rem; /* rounded-2xl */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* shadow-xl */
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    h1, h2 {
+      color: #2563eb; /* Blue color for headings */
+      font-weight: 600; /* Poppins semi-bold */
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 2.25rem; } /* text-4xl */
+    h2 { font-size: 1.75rem; } /* text-2xl */
+
+    /* Form input styling */
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 0.75rem; /* p-3 */
+      border-radius: 0.75rem; /* rounded-xl */
+      border: 2px solid #e2e8f0; /* border-2 border-gray-200 */
+      margin-bottom: 1rem; /* mb-4 */
+      font-size: 1rem;
+      color: #374151; /* text-gray-700 */
+      transition: all 0.2s ease-in-out;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6366f1; /* focus:ring-4 focus:ring-blue-400 */
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Button styling */
+    .btn-primary {
+      background-color: #2563eb; /* bg-blue-500 */
+      color: white;
+      padding: 0.75rem 1.5rem; /* py-3 px-6 */
+      border: none;
+      border-radius: 0.75rem; /* rounded-xl */
+      cursor: pointer;
+      margin-top: 1rem;
+      display: block;
+      width: 100%;
+      font-weight: 700; /* font-bold */
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .btn-primary:hover {
+      background-color: #1d4ed8; /* hover:bg-blue-600 */
+      transform: translateY(-1px);
+    }
+
+    .message-box {
+      background-color: #e0f2fe; /* Light blue */
+      color: #2563eb; /* Darker blue text */
+      padding: 0.75rem; /* p-3 */
+      border-radius: 0.5rem; /* rounded-lg */
+      text-align: center;
+      margin-bottom: 1rem; /* mb-4 */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .message-box.error {
+        background-color: #fee2e2; /* light red */
+        color: #ef4444; /* darker red text */
+    }
+
+    /* Profile Dropdown Styles */
+    .profile-container {
+      position: relative;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%; /* Position below the button */
+      right: 0;
+      background-color: white;
+      border-radius: 0.5rem; /* rounded-lg */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+      width: 150px;
+      overflow: hidden;
+      margin-top: 0.5rem; /* Space between button and dropdown */
+      z-index: 50; /* Ensure it's above other content */
+      display: none; /* Hidden by default */
+    }
+    .profile-dropdown a {
+      display: block;
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      color: #4B5563; /* gray-700 */
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+    .profile-dropdown a:hover {
+      background-color: #F3F4F6; /* gray-100 */
+    }
+    /* Show dropdown on parent hover/focus (for desktop) */
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+    /* For touch devices, consider adding JS to toggle visibility on click */
+
+    /* Main content wrapper */
     #mainContentWrapper {
       display: none;
     }
+
+    /* Calendar specific styles */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -80,7 +188,7 @@
     .daily-total {
       font-size: 0.9rem;
       font-weight: bold;
-      color: #EF4444;
+      color: #EF4444; /* Red for money spent */
       margin-top: auto;
       white-space: nowrap;
       overflow: hidden;
@@ -89,8 +197,18 @@
       box-sizing: border-box;
       padding-top: 5px;
     }
-    .daily-total.positive {
-      color: #10B981;
+    .daily-total.no-spend { /* Changed from .positive to .no-spend for clarity */
+      color: #10B981; /* Green for no spend */
+    }
+    .daily-savings-display { /* New style for savings in calendar cell */
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #10B981; /* Green for savings */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      padding-top: 2px;
     }
     .current-day-highlight {
       background-color: #DBEAFE;
@@ -101,12 +219,14 @@
       .calendar-day-number { font-size: 1.15rem; }
       .calendar-day-date { font-size: 0.78rem; }
       .daily-total { font-size: 0.88rem; }
+      .daily-savings-display { font-size: 0.75rem; }
     }
     @media (max-width: 640px) {
       .calendar-day { min-height: 85px; padding: 8px 4px; }
       .calendar-day-number { font-size: 1.1rem; margin-bottom: 3px; }
       .calendar-day-date { font-size: 0.75rem; }
       .daily-total { font-size: 0.85rem; padding-top: 4px; }
+      .daily-savings-display { font-size: 0.7rem; }
       .calendar-grid { gap: 4px; }
     }
     @media (max-width: 480px) {
@@ -114,6 +234,7 @@
       .calendar-day-number { font-size: 1.0rem; }
       .calendar-day-date { font-size: 0.7rem; }
       .daily-total { font-size: 0.8rem; padding-top: 3px; }
+      .daily-savings-display { font-size: 0.65rem; }
       .calendar-grid { gap: 3px; }
     }
     #spendDetailsModal {
@@ -169,48 +290,34 @@
       align-items: center;
       background-color: #F9FAFB;
     }
+    #modalSpendList li.spend-item {
+      background-color: #FEE2E2; /* Light red for spends */
+    }
+    #modalSpendList li.save-item {
+      background-color: #D1FAE5; /* Light green for saves */
+    }
     #modalSpendList li:last-child { margin-bottom: 0; }
     #modalSpendList li p { margin: 0; font-size: 0.95rem; }
     #modalSpendList li p.text-xs { font-size: 0.75rem; color: #6B7280; }
-    #modalSpendList li span.font-semibold { font-size: 1rem; color: #DC2626; }
+    #modalSpendList li span.font-semibold { font-size: 1rem; color: #DC2626; } /* Default red for amount */
+    #modalSpendList li.save-item span.font-semibold { color: #10B981; } /* Green for save amount */
+
+    #modalTotalsContainer {
+        margin-top: 16px;
+        padding-top: 8px;
+        border-top: 1px solid #E5E7EB;
+        text-align: right;
+    }
+    #modalTotalsContainer p {
+        margin-bottom: 4px;
+    }
+    #modalTotalsContainer p:last-child {
+        margin-bottom: 0;
+    }
     @keyframes popIn {
       0% { transform: scale(0.8); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    /* Profile Dropdown Styles */
-    .profile-container {
-      position: relative;
-    }
-    .profile-dropdown {
-      position: absolute;
-      top: 100%; /* Position below the button */
-      right: 0;
-      background-color: white;
-      border-radius: 0.5rem; /* rounded-lg */
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
-      width: 150px;
-      overflow: hidden;
-      margin-top: 0.5rem; /* Space between button and dropdown */
-      z-index: 50; /* Ensure it's above other content */
-      display: none; /* Hidden by default */
-    }
-    .profile-dropdown a {
-      display: block;
-      padding: 0.75rem 1rem; /* py-3 px-4 */
-      color: #4B5563; /* gray-700 */
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: background-color 0.2s ease;
-    }
-    .profile-dropdown a:hover {
-      background-color: #F3F4F6; /* gray-100 */
-    }
-    /* Show dropdown on parent hover/focus (for desktop) */
-    .profile-container:hover .profile-dropdown {
-      display: block;
-    }
-    /* For touch devices, consider adding JS to toggle visibility on click */
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
@@ -237,11 +344,12 @@
             </div>
           </button>
           <div class="profile-dropdown">
-            <a href="index.html">🏠 Home</a>
-            <a href="profile.html">👤 My Profile</a>
-            <a href="settings.html">⚙️ Settings</a>
-            <a href="#" id="logout-btn">🚪 Logout</a>
-          </div>
+              <a href="index.html">🏠 Home</a>
+              <a href="profile.html">👤 My Profile</a>
+              <a href="settings.html">⚙️ Settings</a>
+              <a href="about.html">ℹ️ About Us</a> <!-- Moved About Us here -->
+              <a href="#" id="logout-btn">🚪 Logout</a>
+            </div>
         </div>
       </div>
     </nav>
@@ -317,6 +425,7 @@
         <p class="text-gray-700 text-lg">Monthly Limit: <span id="currentLimit" class="font-bold text-indigo-600">₹0</span></p>
         <p class="text-gray-700 text-lg">Total Expenses: <span id="totalExpenses" class="font-bold text-red-600">₹0</span></p>
         <p class="text-gray-700 text-lg">Remaining Balance: <span id="remainingBalance" class="font-bold text-green-600">₹0</span></p>
+        <p class="text-gray-700 text-lg">Total Monthly Savings: <span id="totalMonthlySavingsDisplay" class="font-bold text-emerald-600">₹0</span></p>
       </div>
     </section>
 
@@ -347,7 +456,10 @@
     <button id="closeSpendDetailsModal" class="">&times;</button>
     <h2 id="modalDate" class="text-xl font-bold text-indigo-600 mb-4"></h2>
     <div id="modalSpendList" class="space-y-3"></div>
-    <p id="modalTotalSpend" class="text-lg font-semibold text-gray-800 mt-4 text-right">Total: ₹0.00</p>
+    <div id="modalTotalsContainer">
+        <p id="modalTotalSpend" class="text-lg font-semibold text-gray-800">Total Spent: ₹0.00</p>
+        <p id="modalTotalSaved" class="text-lg font-semibold text-emerald-600">Total Saved: ₹0.00</p>
+    </div>
   </div>
 </div>
 
@@ -379,6 +491,7 @@
   const totalExpensesDisplay = document.getElementById('totalExpenses');
   const remainingBalanceDisplay = document.getElementById('remainingBalance');
   const dailySpendTable = document.getElementById('dailySpendTable');
+  const totalMonthlySavingsDisplay = document.getElementById('totalMonthlySavingsDisplay'); // NEW
 
   // Calendar elements
   const currentMonthYearDisplay = document.getElementById('currentMonthYear');
@@ -392,6 +505,7 @@
   const modalDateDisplay = document.getElementById('modalDate');
   const modalSpendList = document.getElementById('modalSpendList');
   const modalTotalSpend = document.getElementById('modalTotalSpend');
+  const modalTotalSaved = document.getElementById('modalTotalSaved'); // NEW
 
   // New header elements
   const guestNav = document.getElementById('guest-nav');
@@ -401,16 +515,21 @@
   const logoutBtn = document.getElementById('logout-btn');
   const profileButton = document.getElementById('profile-button');
 
-
+  // Data variables
   let monthlyLimit = 0;
-  let allDailySpendsData = []; // Stores categorized daily spends from dailyLimits/current
-  let allMiscellaneousSpendsData = []; // Stores miscellaneous spends from miscellaneousSpends collection
-  let allSavingsData = []; // Stores savings data from savings collection
-  let preparedDailySpendDetails = {}; // For calendar modal details
+  let monthlyLimitDocData = {}; // Stores the entire monthlyLimits/current document data
+  let dailyLimitsDocData = {}; // Stores the entire dailyLimits/current document data (including spendsByDate)
+  let miscellaneousSpendsCollectionData = []; // Stores miscellaneous spends from miscellaneousSpends collection
+  let savingsDataCollection = []; // NEW: Stores savings data
 
+  // Calendar state
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
+  let preparedDailySpendDetails = {}; // Stores combined spends and savings for modal lookup by date
 
+  // --- Utility Functions ---
+
+  // Function to format date to YYYY-MM-DD
   function getLocalDateKey(dateObject) {
     const year = dateObject.getFullYear();
     const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
@@ -418,68 +537,97 @@
     return `${year}-${month}-${day}`;
   }
 
+  // Function to get current month in YYYY-MM format
+  function getCurrentMonthYearKey() {
+    return `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}`;
+  }
+
+  // Generic message display
+  function showMessage(element, msg, isError = false) {
+    element.textContent = msg;
+    element.classList.remove('hidden');
+    element.classList.add(isError ? 'bg-red-100' : 'bg-green-100', isError ? 'text-red-700' : 'text-green-700');
+    setTimeout(() => {
+      element.classList.add('hidden');
+      element.classList.remove('bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+    }, 5000);
+  }
+
+  // --- Authentication State Management ---
+
+  function setUIState(isAuthenticated) {
+    if (isAuthenticated) {
+      authMessage.style.display = 'none';
+      mainContentWrapper.style.display = 'block';
+    } else {
+      authMessage.style.display = 'block';
+      mainContentWrapper.style.display = 'none';
+      // Reset UI on logout
+      currentLimitDisplay.innerText = '₹0';
+      totalExpensesDisplay.innerText = '₹0';
+      remainingBalanceDisplay.innerText = '₹0';
+      totalMonthlySavingsDisplay.innerText = '₹0'; // Reset savings display
+      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Please sign in to view your daily spending.</td></tr>';
+      calendarDaysContainer.innerHTML = ''; // Clear calendar
+      currentMonthYearDisplay.textContent = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+      monthlyLimitInput.value = 0;
+    }
+  }
+
   auth.onAuthStateChanged(user => {
     if (user) {
       userId = user.uid;
       console.log("User signed in:", userId);
-      authMessage.style.display = 'none';
-      mainContentWrapper.style.display = 'block';
+      setUIState(true);
 
-      // Show user-specific navigation, hide guest navigation
+      // Update header UI
       guestNav.classList.add('hidden');
       userNav.classList.remove('hidden');
-      
-      // Update username and initial
       const displayName = user.displayName || user.email.split('@')[0];
       usernameDisplay.textContent = displayName;
       userInitial.textContent = displayName.charAt(0).toUpperCase();
 
-      initMonthlyLimitPage();
+      // Initialize all listeners and data fetches
+      setupMonthlyLimitListener();
+      setupDailyLimitsAndSpendsListener(); // Listener for daily limits and spends
+      setupMiscellaneousSpendsListener();
+      setupSavingsListener(); // NEW: Setup savings listener
+      
+      renderCalendar(); // Initial calendar render
     } else {
       userId = null;
       console.log("No user signed in. Monthly limit page functionality disabled.");
-      authMessage.style.display = 'block';
-      mainContentWrapper.style.display = 'none';
+      setUIState(false);
 
-      // Hide user-specific navigation, show guest navigation
+      // Update header UI
       guestNav.classList.remove('hidden');
       userNav.classList.add('hidden');
-
-      currentLimitDisplay.innerText = '₹0';
-      totalExpensesDisplay.innerText = '₹0';
-      remainingBalanceDisplay.innerText = '₹0';
-      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">Please sign in to view your daily spending.</td></tr>';
-      calendarDaysContainer.innerHTML = '<tr><td colspan="7" class="py-3 px-6 text-center text-gray-500">Please sign in to view your calendar.</td></tr>';
-      currentMonthYearDisplay.textContent = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
-      monthlyLimitInput.value = 0;
     }
   });
 
-  // --- Logout Functionality ---
+  // --- Header Navigation & Logout ---
+
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       try {
         await auth.signOut();
-        alert('You have been logged out.');
+        alert('You have been logged out.'); // Consider custom modal instead of alert
         window.location.href = 'log.html'; // Redirect to login page
       } catch (error) {
         console.error("Error logging out:", error);
-        alert("Error logging out: " + error.message);
+        alert("Error logging out: " + error.message); // Consider custom modal instead of alert
       }
     });
   }
 
-  // Toggle profile dropdown on click for mobile/touch devices
   if (profileButton) {
     profileButton.addEventListener('click', () => {
-      const dropdown = profileButton.nextElementSibling; // Get the .profile-dropdown
+      const dropdown = profileButton.nextElementSibling;
       if (dropdown) {
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
       }
     });
-
-    // Close dropdown if clicked outside
     document.addEventListener('click', (event) => {
       if (!profileButton.contains(event.target) && !userNav.contains(event.target)) {
         const dropdown = profileButton.nextElementSibling;
@@ -490,304 +638,160 @@
     });
   }
 
+  // --- Firestore Listeners ---
 
-  async function initMonthlyLimitPage() {
+  let monthlyLimitListenerUnsubscribe = null;
+  function setupMonthlyLimitListener() {
     if (!userId) return;
-    try {
-      // Fetch monthly limit
-      const monthlyLimitDocRef = db.collection('users').doc(userId).collection('monthlyLimits').doc('current');
-      const monthlyLimitDoc = await monthlyLimitDocRef.get();
+    if (monthlyLimitListenerUnsubscribe) monthlyLimitListenerUnsubscribe();
 
-      if (monthlyLimitDoc.exists) {
-        monthlyLimit = parseFloat(monthlyLimitDoc.data().limit) || 0;
-        monthlyLimitInput.value = monthlyLimit;
-      } else {
-        monthlyLimit = 0;
-        monthlyLimitInput.value = 0;
-      }
-      currentLimitDisplay.innerText = `₹${monthlyLimit.toFixed(2)}`;
-
-      // Fetch daily categorized spends
-      const dailyLimitDocRef = db.collection('users').doc(userId).collection('dailyLimits').doc('current');
-      const dailyLimitDoc = await dailyLimitDocRef.get();
-      if (dailyLimitDoc.exists && dailyLimitDoc.data().spends) {
-        allDailySpendsData = dailyLimitDoc.data().spends;
-      } else {
-        allDailySpendsData = [];
-      }
-
-      // Fetch miscellaneous spends
-      const miscSpendsSnapshot = await db.collection('users').doc(userId).collection('miscellaneousSpends').get();
-      allMiscellaneousSpendsData = miscSpendsSnapshot.docs.map(doc => doc.data());
-
-      // Fetch savings data
-      const savingsSnapshot = await db.collection('users').doc(userId).collection('savings').get();
-      allSavingsData = savingsSnapshot.docs.map(doc => doc.data());
-
-
-      // Prepare data for calendar modal (combining daily and misc spends for detail pop-up)
-      const combinedSpendsForDetails = [...allDailySpendsData];
-      allMiscellaneousSpendsData.forEach(miscSpend => {
-          // Add a 'category' or 'type' to distinguish it, if not already present
-          combinedSpendsForDetails.push({ ...miscSpend, category: miscSpend.category || 'Miscellaneous' });
-      });
-      preparedDailySpendDetails = prepareDailySpendDetails(combinedSpendsForDetails);
-
-      // Update monthly data displays using all types of allocations
-      updateMonthlyData(allDailySpendsData, allMiscellaneousSpendsData, allSavingsData);
-      
-      // Pass the current daily limit to generateDailySpendingTable
-      const currentDailyLimit = parseFloat(dailyLimitDoc.data().limit || 0);
-      generateDailySpendingTable(allDailySpendsData, currentDailyLimit); // Still uses only daily categorized spends for table
-      renderCalendar();
-    } catch (error) {
-      console.error("Error initializing monthly limit page:", error);
-      currentLimitDisplay.innerText = 'Error';
-      totalExpensesDisplay.innerText = 'Error';
-      remainingBalanceDisplay.innerText = 'Error';
-      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading data.</td></tr>';
-      calendarDaysContainer.innerHTML = '<tr><td colspan="7" class="py-3 px-6 text-center text-red-500">Error loading calendar data.</td></tr>';
-    }
+    const monthlyLimitDocRef = db.collection('users').doc(userId).collection('monthlyLimits').doc('current');
+    monthlyLimitListenerUnsubscribe = monthlyLimitDocRef.onSnapshot(doc => {
+      monthlyLimit = parseFloat(doc.data()?.limit || 0);
+      monthlyLimitInput.value = monthlyLimit;
+      updateDashboardTotals();
+    }, error => {
+      console.error("Firebase Error fetching monthly limit:", error.code, error.message);
+      // Display error if needed
+    });
   }
 
-  setLimitBtn.addEventListener('click', async () => {
-    if (!userId) {
-      alert("Please sign in to set your monthly limit.");
-      return;
-    }
-    const limitInput = parseFloat(monthlyLimitInput.value);
-    if (isNaN(limitInput) || limitInput < 0) {
-      alert("⚠️ Please enter a valid monthly limit (a positive number or zero).");
-      return;
-    }
-    try {
-      const monthlyLimitDocRef = db.collection('users').doc(userId).collection('monthlyLimits').doc('current');
-      await monthlyLimitDocRef.set({
-        limit: limitInput,
-        lastSetDate: getLocalDateKey(new Date())
-      }, { merge: true });
-      monthlyLimit = limitInput;
-      currentLimitDisplay.innerText = `₹${monthlyLimit.toFixed(2)}`;
-      alert('Monthly limit set and saved!');
+  let dailyLimitsAndSpendsListenerUnsubscribe = null;
+  function setupDailyLimitsAndSpendsListener() {
+    if (!userId) return;
+    if (dailyLimitsAndSpendsListenerUnsubscribe) dailyLimitsAndSpendsListenerUnsubscribe();
 
-      // Re-fetch all data and update UI after setting limit
-      await initMonthlyLimitPage(); // Re-initialize the page to get fresh data
+    const dailyLimitsDocRef = db.collection('users').doc(userId).collection('dailyLimits').doc('current');
+    dailyLimitsAndSpendsListenerUnsubscribe = dailyLimitsDocRef.onSnapshot(doc => {
+      dailyLimitsDocData = doc.data() || {};
+      // No need to update currentDailyLimit from here, as it's set in daily_limit.html
+      // We only care about spendsByDate here for monthly calculations and calendar.
+      updateDashboardTotals();
+      renderCalendar(); // Re-render calendar when daily spends data changes
+      renderDailySpendTable(); // Re-render the daily spending overview table
+    }, error => {
+      console.error("Firebase Error fetching daily limits and spends:", error.code, error.message);
+      dailySpendTable.innerHTML = `<tr><td colspan="3" class="px-4 py-2 text-center text-red-500">Error loading daily spend data: ${error.message}</td></tr>`;
+      calendarDaysContainer.innerHTML = '<div class="col-span-7 text-center text-red-500 py-3">Error loading calendar data.</div>';
+    });
+  }
+
+  let miscellaneousSpendsListenerUnsubscribe = null;
+  function setupMiscellaneousSpendsListener() {
+    if (!userId) return;
+    if (miscellaneousSpendsListenerUnsubscribe) miscellaneousSpendsListenerUnsubscribe();
+
+    const miscSpendsCollectionRef = db.collection('users').doc(userId).collection('miscellaneousSpends');
+    miscellaneousSpendsListenerUnsubscribe = miscSpendsCollectionRef.onSnapshot(snapshot => {
+      miscellaneousSpendsCollectionData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      updateDashboardTotals();
+      renderCalendar(); // Re-render calendar when misc spends change
+      renderDailySpendTable(); // Re-render daily spend table as well
+    }, error => {
+      console.error("Firebase Error fetching miscellaneous spends:", error.code, error.message);
+    });
+  }
+
+  // NEW: Listener for savings data
+  let savingsListenerUnsubscribe = null;
+  function setupSavingsListener() {
+      if (!userId) return;
+      if (savingsListenerUnsubscribe) savingsListenerUnsubscribe();
+
+      const savingsCollectionRef = db.collection('users').doc(userId).collection('savings');
+      savingsListenerUnsubscribe = savingsCollectionRef.onSnapshot(snapshot => {
+          savingsDataCollection = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          updateDashboardTotals(); // Re-calculate monthly totals
+          renderCalendar(); // Re-render calendar
+      }, error => {
+          console.error("Firebase Error fetching savings data:", error.code, error.message);
+      });
+  }
+
+
+  // --- Monthly Limit Management ---
+
+  setLimitBtn.addEventListener('click', async () => {
+    if (!userId) return;
+
+    const newLimit = parseFloat(monthlyLimitInput.value);
+    if (isNaN(newLimit) || newLimit < 0) {
+      alert('Please enter a valid monthly limit (a positive number or zero).');
+      return;
+    }
+
+    try {
+      await db.collection('users').doc(userId).collection('monthlyLimits').doc('current').set({
+        limit: newLimit,
+        lastSetDate: new Date().toISOString().split('T')[0]
+      }, { merge: true });
+      // Listener will update UI
+      alert('Monthly limit saved successfully!');
     } catch (error) {
-      console.error("Error saving monthly limit:", error);
+      console.error("Error setting monthly limit:", error);
       alert("Error saving monthly limit: " + error.message);
     }
   });
 
-  // New function to calculate total monthly expenses from daily, miscellaneous, and savings
-  function calculateMonthlyTotalAllocations(dailySpends, miscellaneousSpends, savingsData) {
-    let monthlyTotal = 0;
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+  // --- Dashboard Total Calculations ---
 
-    // Sum daily categorized spends for the current month
-    dailySpends.forEach(spend => {
-      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-        const spendDate = spend.timestamp.toDate();
-        if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
-          monthlyTotal += spend.amount;
+  function updateDashboardTotals() {
+    let totalMonthlySpends = 0;
+    let totalMonthlySavings = 0; // NEW: Initialize total monthly savings
+
+    // Calculate total from dailyCategorizedSpends (nested in dailyLimits/current) for the current month
+    const currentMonthKey = getCurrentMonthYearKey(); // YYYY-MM
+    const spendsByDate = dailyLimitsDocData.spendsByDate || {};
+
+    for (const dateKey in spendsByDate) {
+      if (dateKey.startsWith(currentMonthKey)) { // Check if date is in current month
+        const dailySpends = spendsByDate[dateKey];
+        if (Array.isArray(dailySpends)) {
+          dailySpends.forEach(spend => {
+            totalMonthlySpends += parseFloat(spend.amount || 0);
+          });
         }
       }
-    });
-
-    // Sum miscellaneous spends for the current month
-    miscellaneousSpends.forEach(spend => {
-      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-        const spendDate = spend.timestamp.toDate();
-        if (spendDate.getMonth() === currentMonth && spendDate.getFullYear() === currentYear) {
-          monthlyTotal += spend.amount;
-        }
-      }
-    });
-
-    // Sum savings for the current month
-    savingsData.forEach(save => {
-      if (save.timestamp && typeof save.timestamp.toDate === 'function') {
-        const saveDate = save.timestamp.toDate();
-        if (saveDate.getMonth() === currentMonth && saveDate.getFullYear() === currentYear) {
-          monthlyTotal += save.amount;
-        }
-      }
-    });
-
-    return monthlyTotal;
-  }
-
-  // Update function to accept all relevant data types
-  function updateMonthlyData(dailySpends, miscellaneousSpends, savingsData) {
-    const totalAllocations = calculateMonthlyTotalAllocations(dailySpends, miscellaneousSpends, savingsData);
-    totalExpensesDisplay.innerText = `₹${totalAllocations.toFixed(2)}`; // Renamed to totalAllocations conceptually
-
-    const remainingBalance = monthlyLimit - totalAllocations;
-    remainingBalanceDisplay.innerText = `₹${remainingBalance.toFixed(2)}`;
-    remainingBalanceDisplay.style.color = remainingBalance >= 0 ? '#10B981' : '#EF4444';
-  }
-
-  function groupSpendingByDate(spendsArray, targetMonth, targetYear) {
-    const grouped = {};
-    spendsArray.forEach(spend => {
-      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-        const spendDate = spend.timestamp.toDate();
-        if (spendDate.getMonth() === targetMonth && spendDate.getFullYear() === targetYear) {
-          const dateKey = getLocalDateKey(spendDate);
-          if (!grouped[dateKey]) grouped[dateKey] = 0;
-          grouped[dateKey] += spend.amount;
-        }
-      }
-    });
-    return grouped;
-  }
-
-  function prepareDailySpendDetails(spendsArray) {
-    const dailyDetails = {};
-    spendsArray.forEach(spend => {
-      if (spend.timestamp && typeof spend.timestamp.toDate === 'function') {
-        const spendDate = spend.timestamp.toDate();
-        const dateKey = getLocalDateKey(spendDate);
-        if (!dailyDetails[dateKey]) {
-          dailyDetails[dateKey] = [];
-        }
-        dailyDetails[dateKey].push(spend);
-      }
-    });
-    return dailyDetails;
-  }
-
-  function generateDailySpendingTable(allDailySpends, dailyLimit) {
-    dailySpendTable.innerHTML = '';
-    const today = new Date();
-    const currentMonthForTable = today.getMonth();
-    const currentYearForTable = today.getFullYear();
-    const grouped = groupSpendingByDate(allDailySpends, currentMonthForTable, currentYearForTable);
-    const sortedDateKeys = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
-    if (sortedDateKeys.length === 0) {
-      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No daily spending data for this month.</td></tr>';
-      return;
     }
-    sortedDateKeys.forEach(dateKey => {
-      const total = grouped[dateKey];
-      const tr = document.createElement('tr');
-      const statusClass = total <= dailyLimit ? 'bg-green-500' : 'bg-red-500';
-      const statusText = total <= dailyLimit ? 'Within Limit' : 'Over Limit';
-      const displayDate = new Date(dateKey).toLocaleDateString('en-GB');
-      tr.innerHTML = `
-        <td class="px-4 py-2">${displayDate}</td>
-        <td class="px-4 py-2">₹${total.toFixed(2)}</td>
-        <td class="px-4 py-2">
-          <span class="px-3 py-1 rounded-full text-white text-sm font-medium ${statusClass}">
-            ${statusText}
-          </span>
-        </td>
-      `;
-      dailySpendTable.appendChild(tr);
+
+    // Add total from miscellaneous expenses for the current month
+    miscellaneousSpendsCollectionData.forEach(miscSpend => {
+        // Assuming miscellaneous spends also have a 'date' field in YYYY-MM-DD format
+        const miscSpendDateKey = miscSpend.date; // Use the 'date' field directly
+        if (miscSpendDateKey && miscSpendDateKey.startsWith(currentMonthKey)) {
+            totalMonthlySpends += parseFloat(miscSpend.amount || 0);
+        }
     });
+
+    // NEW: Calculate total monthly savings
+    savingsDataCollection.forEach(save => {
+      let saveDate;
+      if (save.timestamp && typeof save.timestamp.toDate === 'function') {
+          saveDate = save.timestamp.toDate();
+      } else if (save.date) {
+          // Fallback for older data that might just have a date string
+          saveDate = new Date(save.date + 'T00:00:00');
+      } else {
+          return; // Skip if no valid date info
+      }
+      const saveMonthKey = `${saveDate.getFullYear()}-${(saveDate.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (saveMonthKey === currentMonthKey) {
+          totalMonthlySavings += parseFloat(save.amount || 0);
+      }
+    });
+
+
+    const remaining = monthlyLimit - totalMonthlySpends;
+
+    currentLimitDisplay.textContent = `₹${monthlyLimit.toFixed(2)}`;
+    totalExpensesDisplay.textContent = `₹${totalMonthlySpends.toFixed(2)}`;
+    remainingBalanceDisplay.textContent = `₹${remaining.toFixed(2)}`;
+    totalMonthlySavingsDisplay.textContent = `₹${totalMonthlySavings.toFixed(2)}`; // NEW: Update savings display
+
+    remainingBalanceDisplay.style.color = remaining >= 0 ? '#10B981' : '#EF4444';
   }
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-  function renderCalendar() {
-    calendarDaysContainer.innerHTML = '';
-    currentMonthYearDisplay.textContent = `${months[currentMonth]} ${currentYear}`;
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const startDay = firstDayOfMonth.getDay();
-    const today = new Date();
-    const todayDate = today.getDate();
-    const todayMonth = today.getMonth();
-    const todayYear = today.getFullYear();
-
-    // Group *all* relevant spending amounts (daily and miscellaneous) for the calendar display
-    // Savings are not typically shown per day on a calendar for spending, but contribute to monthly limit
-    const allRelevantSpendsForCalendar = [
-        ...allDailySpendsData.filter(s => {
-            const date = s.timestamp.toDate();
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        }),
-        ...allMiscellaneousSpendsData.filter(s => {
-            const date = s.timestamp.toDate();
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        })
-    ];
-    const monthlySpendingMap = groupSpendingByDate(allRelevantSpendsForCalendar, currentMonth, currentYear);
-    
-    // Fetch daily limit to apply color coding in calendar
-    let currentDailyLimit = 0;
-    db.collection('users').doc(userId).collection('dailyLimits').doc('current').get()
-      .then(doc => {
-        if (doc.exists) {
-          currentDailyLimit = parseFloat(doc.data().limit || 0);
-        }
-
-        for (let i = 0; i < startDay; i++) {
-          const emptyDay = document.createElement('div');
-          emptyDay.className = 'calendar-day other-month';
-          calendarDaysContainer.appendChild(emptyDay);
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-          const fullDateLocal = new Date(currentYear, currentMonth, day);
-          const dateKeyForMap = getLocalDateKey(fullDateLocal);
-          const totalSpentForDay = monthlySpendingMap[dateKeyForMap] || 0;
-          const dayElement = document.createElement('div');
-          dayElement.className = 'calendar-day current-month';
-          dayElement.dataset.date = dateKeyForMap;
-          dayElement.addEventListener('click', () => showSpendDetailsModal(dateKeyForMap));
-          if (day === todayDate && currentMonth === todayMonth && currentYear === todayYear) {
-            dayElement.classList.add('current-day-highlight');
-          }
-
-          let totalDisplay = `₹${totalSpentForDay.toFixed(2)}`;
-          let totalClass = ''; 
-          if (totalSpentForDay > 0 && currentDailyLimit > 0 && totalSpentForDay > currentDailyLimit) {
-            totalClass = 'text-red-500'; // Over limit, make it red
-          } else if (totalSpentForDay === 0) {
-            totalClass = 'text-gray-400'; // No spend, make it gray
-          } else {
-             totalClass = 'text-green-600'; // Within limit, make it green
-          }
-          
-          dayElement.innerHTML = `
-            <span class="calendar-day-number">${day}</span>
-            <span class="daily-total ${totalClass}">${totalDisplay}</span>
-          `;
-          calendarDaysContainer.appendChild(dayElement);
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching daily limit for calendar:", error);
-        // Fallback if daily limit fetching fails (display based on collected data without limit styling)
-        for (let i = 0; i < startDay; i++) {
-            const emptyDay = document.createElement('div');
-            emptyDay.className = 'calendar-day other-month';
-            calendarDaysContainer.appendChild(emptyDay);
-        }
-        for (let day = 1; day <= daysInMonth; day++) {
-            const fullDateLocal = new Date(currentYear, currentMonth, day);
-            const dateKeyForMap = getLocalDateKey(fullDateLocal);
-            const totalSpentForDay = monthlySpendingMap[dateKeyForMap] || 0;
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day current-month';
-            dayElement.dataset.date = dateKeyForMap;
-            dayElement.addEventListener('click', () => showSpendDetailsModal(dateKeyForMap));
-            if (day === todayDate && currentMonth === todayMonth && currentYear === todayYear) {
-                dayElement.classList.add('current-day-highlight');
-            }
-            let totalDisplay = `₹${totalSpentForDay.toFixed(2)}`;
-            let totalClass = totalSpentForDay === 0 ? 'text-gray-400' : 'positive';
-            
-            dayElement.innerHTML = `
-                <span class="calendar-day-number">${day}</span>
-                <span class="daily-total ${totalClass}">${totalDisplay}</span>
-            `;
-            calendarDaysContainer.appendChild(dayElement);
-        }
-      });
-  }
-
+  // --- Calendar Generation ---
 
   prevMonthBtn.addEventListener('click', () => {
     currentMonth--;
@@ -796,6 +800,8 @@
       currentYear--;
     }
     renderCalendar();
+    updateDashboardTotals(); // Recalculate for new month
+    renderDailySpendTable(); // Recalculate for new month
   });
 
   nextMonthBtn.addEventListener('click', () => {
@@ -805,46 +811,321 @@
       currentYear++;
     }
     renderCalendar();
+    updateDashboardTotals(); // Recalculate for new month
+    renderDailySpendTable(); // Recalculate for new month
   });
+
+  function renderCalendar() {
+    currentMonthYearDisplay.textContent = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    calendarDaysContainer.innerHTML = '';
+    preparedDailySpendDetails = {}; // Reset details for the new month
+
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    const startDate = new Date(firstDayOfMonth);
+    startDate.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay()); // Go back to the first Sunday
+
+    const today = new Date();
+    const todayDateKey = getLocalDateKey(today);
+
+    for (let i = 0; i < 42; i++) { // Render 6 weeks (max days needed for calendar)
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      const dayDateKey = getLocalDateKey(day);
+
+      const calendarDayDiv = document.createElement('div');
+      calendarDayDiv.classList.add('calendar-day');
+
+      // Dim days not in the current month
+      if (day.getMonth() !== currentMonth) {
+        calendarDayDiv.classList.add('other-month');
+      } else {
+        calendarDayDiv.classList.add('current-month');
+      }
+
+      // Highlight current day
+      if (dayDateKey === todayDateKey) {
+        calendarDayDiv.classList.add('current-day-highlight');
+      }
+
+      const dayNumber = document.createElement('span');
+      dayNumber.classList.add('calendar-day-number');
+      dayNumber.textContent = day.getDate();
+      calendarDayDiv.appendChild(dayNumber);
+
+      let dailyTotalSpend = 0; // Renamed for clarity
+      let dailyTotalSavings = 0; // NEW: Daily savings total
+      const dayEntries = []; // All individual entries (spends and savings) for the day
+      const categoryTotals = {}; // Sum of amounts per category for spends
+
+      // Process daily categorized spends (from dailyLimitsDocData.spendsByDate)
+      const dailyCategorizedSpendsForDay = (dailyLimitsDocData.spendsByDate && dailyLimitsDocData.spendsByDate[dayDateKey]) || [];
+      dailyCategorizedSpendsForDay.forEach(spend => {
+        const amount = parseFloat(spend.amount || 0);
+        dailyTotalSpend += amount;
+        dayEntries.push({ type: 'Spend', category: spend.category, amount: amount, timestamp: spend.timestamp });
+        categoryTotals[spend.category] = (categoryTotals[spend.category] || 0) + amount;
+      });
+
+      // Process miscellaneous spends
+      const dailyMiscellaneousSpends = miscellaneousSpendsCollectionData.filter(miscSpend => miscSpend.date === dayDateKey);
+      dailyMiscellaneousSpends.forEach(miscSpend => {
+        const amount = parseFloat(miscSpend.amount || 0);
+        dailyTotalSpend += amount;
+        // Use the title as the category for misc spends for the purpose of category breakdown
+        const effectiveCategory = miscSpend.title || 'Miscellaneous';
+        dayEntries.push({ type: 'Spend', category: effectiveCategory, amount: amount, timestamp: miscSpend.timestamp, title: miscSpend.title });
+        categoryTotals[effectiveCategory] = (categoryTotals[effectiveCategory] || 0) + amount;
+      });
+
+      // NEW: Process daily savings
+      const dailySavingsEntries = savingsDataCollection.filter(save => {
+          let saveDate;
+          if (save.timestamp && typeof save.timestamp.toDate === 'function') {
+              saveDate = save.timestamp.toDate();
+          } else if (save.date) {
+              saveDate = new Date(save.date + 'T00:00:00');
+          } else {
+              return false;
+          }
+          return getLocalDateKey(saveDate) === dayDateKey;
+      });
+      dailySavingsEntries.forEach(save => {
+          const amount = parseFloat(save.amount || 0);
+          dailyTotalSavings += amount;
+          dayEntries.push({ type: 'Savings', goal: save.goal, amount: amount, timestamp: save.timestamp });
+      });
+
+
+      // Determine the category text to display on the calendar cell (for spends)
+      let displayCategoryText = '';
+      const distinctCategories = Object.keys(categoryTotals);
+
+      if (dailyTotalSpend === 0) {
+        displayCategoryText = 'No Spends';
+      } else if (distinctCategories.length === 1) {
+        displayCategoryText = distinctCategories[0]; // Only one category
+      } else {
+        // More than one category, find the dominant one or show 'Mixed'
+        let topCategory = '';
+        let maxAmount = 0;
+        for (const cat in categoryTotals) {
+          if (categoryTotals[cat] > maxAmount) {
+            maxAmount = categoryTotals[cat];
+            topCategory = cat;
+          }
+        }
+        // If the top category is more than 70% of the total, display it, else 'Mixed'
+        if (maxAmount / dailyTotalSpend >= 0.7 && topCategory !== '') {
+          displayCategoryText = topCategory;
+        } else {
+          displayCategoryText = 'Mixed Spends';
+        }
+      }
+
+      // Store combined entries for modal
+      preparedDailySpendDetails[dayDateKey] = dayEntries;
+
+      // Add category text to calendar day
+      const categoryTextSpan = document.createElement('span');
+      categoryTextSpan.classList.add('text-xs', 'text-gray-600', 'truncate', 'w-full', 'mt-1', 'mb-1');
+      categoryTextSpan.textContent = displayCategoryText;
+      calendarDayDiv.appendChild(categoryTextSpan);
+
+      // Existing daily total spend span
+      const dailyTotalSpendSpan = document.createElement('span');
+      dailyTotalSpendSpan.classList.add('daily-total');
+      dailyTotalSpendSpan.textContent = `₹${dailyTotalSpend.toFixed(2)}`;
+      if (dailyTotalSpend === 0) {
+        dailyTotalSpendSpan.classList.add('no-spend');
+      }
+      calendarDayDiv.appendChild(dailyTotalSpendSpan);
+
+      // NEW: Add daily savings display span
+      if (dailyTotalSavings > 0) {
+          const dailySavingsSpan = document.createElement('span');
+          dailySavingsSpan.classList.add('daily-savings-display');
+          dailySavingsSpan.textContent = `Saved: ₹${dailyTotalSavings.toFixed(2)}`;
+          calendarDayDiv.appendChild(dailySavingsSpan);
+      }
+
+      // Add click listener to open modal for days with entries in current month
+      if (day.getMonth() === currentMonth) {
+        calendarDayDiv.addEventListener('click', () => showSpendDetailsModal(dayDateKey));
+      }
+
+      calendarDaysContainer.appendChild(calendarDayDiv);
+    }
+  }
+
+  // --- Daily Spending Table ---
+
+  function renderDailySpendTable() {
+    dailySpendTable.innerHTML = ''; // Clear existing rows
+
+    const currentMonthKey = getCurrentMonthYearKey(); // YYYY-MM
+    const spendsByDate = dailyLimitsDocData.spendsByDate || {};
+    let allSpendsForMonth = [];
+    let allSavingsForMonth = []; // NEW: All savings for the month
+
+    // Combine daily categorized spends and miscellaneous spends for the current month
+    for (const dateKey in spendsByDate) {
+      if (dateKey.startsWith(currentMonthKey)) {
+        const dailySpends = spendsByDate[dateKey];
+        if (Array.isArray(dailySpends)) {
+          dailySpends.forEach(spend => {
+            allSpendsForMonth.push({ date: dateKey, amount: parseFloat(spend.amount || 0), type: 'Categorized' });
+          });
+        }
+      }
+    }
+
+    miscellaneousSpendsCollectionData.forEach(miscSpend => {
+      const miscSpendDateKey = miscSpend.date;
+      if (miscSpendDateKey && miscSpendDateKey.startsWith(currentMonthKey)) {
+        allSpendsForMonth.push({ date: miscSpendDateKey, amount: parseFloat(miscSpend.amount || 0), type: 'Miscellaneous' });
+      }
+    });
+
+    // NEW: Collect all savings for the current month
+    savingsDataCollection.forEach(save => {
+        let saveDate;
+        if (save.timestamp && typeof save.timestamp.toDate === 'function') {
+            saveDate = save.timestamp.toDate();
+        } else if (save.date) {
+            saveDate = new Date(save.date + 'T00:00:00');
+        } else {
+            return;
+        }
+        const saveDateKey = getLocalDateKey(saveDate);
+        if (saveDateKey.startsWith(currentMonthKey)) {
+            allSavingsForMonth.push({ date: saveDateKey, amount: parseFloat(save.amount || 0), type: 'Savings' });
+        }
+    });
+
+
+    // Group spends by date to get daily totals
+    const dailyTotalsMap = {};
+    allSpendsForMonth.forEach(spend => {
+      if (!dailyTotalsMap[spend.date]) {
+        dailyTotalsMap[spend.date] = 0;
+      }
+      dailyTotalsMap[spend.date] += spend.amount;
+    });
+
+    const sortedDates = Object.keys(dailyTotalsMap).sort((a, b) => new Date(b) - new Date(a)); // Sort descending by date
+
+    if (sortedDates.length === 0 && allSavingsForMonth.length === 0) { // Check for both spends and saves
+      dailySpendTable.innerHTML = '<tr><td colspan="3" class="px-4 py-2 text-center text-gray-500">No spending or saving data for this month.</td></tr>';
+      return;
+    }
+    
+    // Combine all relevant dates from spends and saves for the table
+    const allRelevantDates = new Set([...Object.keys(dailyTotalsMap), ...allSavingsForMonth.map(s => s.date)]);
+    const sortedAllDates = Array.from(allRelevantDates).sort((a, b) => new Date(b) - new Date(a));
+
+
+    sortedAllDates.forEach(dateKey => {
+      const totalSpentForDay = dailyTotalsMap[dateKey] || 0;
+      const totalSavedForDay = allSavingsForMonth.filter(s => s.date === dateKey).reduce((sum, s) => sum + s.amount, 0);
+
+      const row = dailySpendTable.insertRow();
+      row.classList.add('hover:bg-gray-50', 'transition', 'duration-100');
+
+      const dateCell = row.insertCell();
+      dateCell.classList.add('px-4', 'py-2');
+      dateCell.textContent = dateKey;
+
+      const spentCell = row.insertCell();
+      spentCell.classList.add('px-4', 'py-2', 'font-semibold');
+      spentCell.textContent = `₹${totalSpentForDay.toFixed(2)}`;
+      spentCell.classList.add(totalSpentForDay > 0 ? 'text-red-600' : 'text-gray-500');
+
+      const statusCell = row.insertCell();
+      statusCell.classList.add('px-4', 'py-2');
+      
+      let statusText = '';
+      if (totalSpentForDay > 0 && totalSavedForDay > 0) {
+          statusText = 'Spend & Saved';
+          statusCell.classList.add('text-blue-500');
+      } else if (totalSpentForDay > 0) {
+          statusText = 'Spent';
+          statusCell.classList.add('text-red-500');
+      } else if (totalSavedForDay > 0) {
+          statusText = 'Saved';
+          statusCell.classList.add('text-green-500');
+      } else {
+          statusText = 'No Activity';
+          statusCell.classList.add('text-gray-500');
+      }
+      statusCell.textContent = statusText;
+    });
+  }
+
+  // --- Modal Functions ---
 
   function showSpendDetailsModal(dateKey) {
     modalSpendList.innerHTML = '';
-    let totalForModal = 0;
-    const spendsForDate = preparedDailySpendDetails[dateKey] || [];
-    const dateObj = new Date(dateKey + 'T00:00:00');
-    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    modalDateDisplay.textContent = `Spends for ${formattedDate}`;
-    if (spendsForDate.length === 0) {
-      modalSpendList.innerHTML = '<li class="text-gray-500">No spends recorded for this date.</li>';
-    } else {
-      spendsForDate.sort((a, b) => {
+    modalTotalSpend.textContent = 'Total Spent: ₹0.00';
+    modalTotalSaved.textContent = 'Total Saved: ₹0.00'; // NEW: Reset saved total
+
+    const dayEntries = preparedDailySpendDetails[dateKey] || [];
+    modalDateDisplay.textContent = new Date(dateKey + 'T00:00:00').toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    let totalForModalSpend = 0;
+    let totalForModalSaved = 0; // NEW: Savings total for modal
+
+    // Sort all entries by timestamp (newest first)
+    dayEntries.sort((a, b) => {
         const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : 0;
         const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : 0;
         return timeB - timeA;
-      });
-      spendsForDate.forEach(spend => {
+    });
+
+    if (dayEntries.length === 0) {
+      modalSpendList.innerHTML = '<li class="text-gray-500 text-center">No spends or savings recorded for this date.</li>';
+    } else {
+      dayEntries.forEach(entry => {
         const li = document.createElement('li');
-        li.className = 'flex justify-between items-center bg-gray-50 p-2 rounded-lg';
-        const spendTime = spend.timestamp && typeof spend.timestamp.toDate === 'function'
-          ? spend.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        const entryTime = entry.timestamp && typeof entry.timestamp.toDate === 'function'
+          ? entry.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
           : '';
 
-        // Determine category display
-        // Use 'category' for daily spends, 'title' for miscellaneous spends, or 'N/A'
-        const typeDisplay = spend.category || spend.title || 'N/A'; 
-        
-        li.innerHTML = `
-          <div>
-            <p class="font-medium text-gray-800">${typeDisplay}</p>
-            <p class="text-xs text-gray-500">${spendTime}</p>
-          </div>
-          <span class="font-semibold text-red-600">₹${spend.amount.toFixed(2)}</span>
-        `;
+        if (entry.type === 'Spend') {
+            li.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'rounded-lg', 'spend-item'); // Add spend-item class
+            totalForModalSpend += entry.amount;
+            let typeDisplay = entry.category || 'N/A';
+            if (entry.title && entry.category === 'Miscellaneous') { // If it's a misc spend with a specific title
+                typeDisplay = `${entry.title} (Misc)`;
+            } else if (entry.type === 'Miscellaneous') { // Fallback if type is just 'Miscellaneous'
+                typeDisplay = `${typeDisplay} (Misc)`;
+            }
+            li.innerHTML = `
+              <div>
+                <p class="font-medium text-gray-800">${typeDisplay}</p>
+                <p class="text-xs text-gray-500">${entryTime}</p>
+              </div>
+              <span class="font-semibold text-red-600">₹${entry.amount.toFixed(2)}</span>
+            `;
+        } else if (entry.type === 'Savings') { // NEW: Handle savings entries
+            li.classList.add('flex', 'justify-between', 'items-center', 'p-2', 'rounded-lg', 'save-item'); // Add save-item class
+            totalForModalSaved += entry.amount;
+            const savingsGoal = entry.goal || 'Savings';
+            li.innerHTML = `
+              <div>
+                <p class="font-medium text-gray-800">SAVED: ${savingsGoal}</p>
+                <p class="text-xs text-gray-500">${entryTime}</p>
+              </div>
+              <span class="font-semibold text-green-600">₹${entry.amount.toFixed(2)}</span>
+            `;
+        }
         modalSpendList.appendChild(li);
-        totalForModal += spend.amount;
       });
     }
-    modalTotalSpend.textContent = `Total: ₹${totalForModal.toFixed(2)}`;
+    modalTotalSpend.textContent = `Total Spent: ₹${totalForModalSpend.toFixed(2)}`;
+    modalTotalSaved.textContent = `Total Saved: ₹${totalForModalSaved.toFixed(2)}`; // NEW: Update total saved
     spendDetailsModal.style.display = 'flex';
   }
 
@@ -852,11 +1133,16 @@
     spendDetailsModal.style.display = 'none';
   });
 
+  // Close modal if clicked outside
   spendDetailsModal.addEventListener('click', (event) => {
     if (event.target === spendDetailsModal) {
       spendDetailsModal.style.display = 'none';
     }
   });
+
+  // Initial setup when page loads
+  setUIState(false); // Set initial UI state (hidden if not logged in)
+  // No direct `initMonthlyLimitPage()` call here. Authentication listener will trigger data loading.
 </script>
 </body>
 </html>
