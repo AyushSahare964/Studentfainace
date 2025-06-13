@@ -84,21 +84,21 @@
   <!-- Header -->
   <header class="gradient-bg text-white py-5 shadow-lg">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <h1 class="text-3xl font-bold">💰 Finance Tracker</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold">💰 Finance Tracker</h1>
       <nav class="flex items-center">
         <!-- These will be shown when user is not logged in -->
         <div id="guest-nav" class="flex items-center">
-          <a href="log.html" class="mx-2 hover:underline text-lg">Login</a>
-          <a href="register.html" class="mx-2 hover:underline text-lg">Register</a>
+          <a href="log.html" class="mx-1 sm:mx-2 hover:underline text-base sm:text-lg">Login</a>
+          <a href="register.html" class="mx-1 sm:mx-2 hover:underline text-base sm:text-lg">Register</a>
           <!-- About Us link moved to dropdown or removed if not needed for guests -->
         </div>
         
         <!-- This will be shown when user is logged in -->
         <div id="user-nav" class="hidden flex items-center">
           <div class="profile-container relative">
-            <button id="profile-button" class="flex items-center space-x-2 focus:outline-none">
-              <span id="username-display" class="text-lg">User</span>
-              <div class="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold">
+            <button id="profile-button" class="flex items-center space-x-1 sm:space-x-2 focus:outline-none">
+              <span id="username-display" class="text-base sm:text-lg">User</span>
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-bold text-base sm:text-lg">
                 <span id="user-initial">U</span>
               </div>
             </button>
@@ -116,41 +116,41 @@
   </header>
 
   <!-- Main -->
-  <main class="container mx-auto px-4 py-12 flex-grow">
+  <main class="container mx-auto px-4 py-8 sm:py-12 flex-grow">
     <!-- Hero Section -->
-    <section class="text-center mb-12">
-      <h2 class="text-4xl font-bold text-indigo-600 mb-4">Take Control of Your Money</h2>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+    <section class="text-center mb-8 sm:mb-12">
+      <h2 class="text-3xl sm:text-4xl font-bold text-indigo-600 mb-2 sm:mb-4">Take Control of Your Money</h2>
+      <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
         Set limits, track spending, save smarter — all in one beautiful dashboard.
       </p>
     </section>
 
     <!-- Auth Message -->
-    <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-2xl mx-auto mb-8" role="alert" style="display: none;">
-        <strong class="font-bold">Access Denied:</strong>
-        <span class="block sm:inline">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to view your financial overview.</span>
+    <div id="authMessage" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 sm:px-4 sm:py-3 rounded relative max-w-2xl mx-auto mb-6 sm:mb-8" role="alert" style="display: none;">
+        <strong class="font-bold text-sm sm:text-base">Access Denied:</strong>
+        <span class="block sm:inline text-sm sm:text-base">Please <a href="log.html" class="font-semibold text-red-800 hover:underline">sign in</a> to view your financial overview.</span>
     </div>
 
     <div id="mainContentWrapper">
       <!-- Personalized Greeting (NEW) -->
-      <p id="greetingMessage" class="text-2xl font-semibold text-gray-700 text-center mb-8 hidden">
+      <p id="greetingMessage" class="text-xl sm:text-2xl font-semibold text-gray-700 text-center mb-6 sm:mb-8 hidden">
         Hello, <span id="greetingUserName" class="text-indigo-600"></span>! Welcome back.
       </p>
 
       <!-- Add Daily Categorized Spend Section (NOW AT TOP) -->
-      <section class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl mb-12">
-        <h3 class="text-3xl font-bold text-indigo-600 mb-6 text-center">📝 Add Today's Spend</h3>
-        <div id="dailySpendMessage" class="message-box hidden"></div>
+      <section class="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl mb-8 sm:mb-12">
+        <h3 class="text-2xl sm:text-3xl font-bold text-indigo-600 mb-4 sm:mb-6 text-center">📝 Add Today's Spend</h3>
+        <div id="dailySpendMessage" class="message-box hidden text-sm sm:text-base"></div>
 
-        <div class="mb-4">
-          <label for="spendAmount" class="block text-gray-700 text-lg font-semibold mb-2">Amount (₹)</label>
+        <div class="mb-3 sm:mb-4">
+          <label for="spendAmount" class="block text-gray-700 text-base sm:text-lg font-semibold mb-1 sm:mb-2">Amount (₹)</label>
           <input type="number" id="spendAmount" placeholder="e.g., 500" min="0" step="any"
-                 class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                 class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-base sm:text-lg">
         </div>
-        <div class="mb-6">
-          <label for="spendCategory" class="block text-gray-700 text-lg font-semibold mb-2">Category</label>
+        <div class="mb-4 sm:mb-6">
+          <label for="spendCategory" class="block text-gray-700 text-base sm:text-lg font-semibold mb-1 sm:mb-2">Category</label>
           <select id="spendCategory"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-base sm:text-lg">
             <option value="">Select a category</option>
             <option value="Food">Food</option>
             <option value="Transport">Transport</option>
@@ -163,77 +163,69 @@
             <option value="Other">Other</option>
           </select>
         </div>
-        <button id="addSpendBtn" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md">
+        <button id="addSpendBtn" class="w-full bg-blue-600 text-white font-semibold py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md text-base sm:text-lg">
           Add Spend
         </button>
       </section>
 
       <!-- Current Financial Status Dashboard -->
-      <section class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-xl mb-12">
-        <h3 class="text-3xl font-bold text-indigo-600 mb-6 text-center">Current Financial Status</h3>
-        <p class="text-gray-700 text-lg mb-2">Daily Limit: <span id="dailyLimitDisplayHome" class="font-bold text-blue-600">₹0</span></p>
-        <p class="text-gray-700 text-lg mb-2">Today's Total Spend: <span id="todaySpendDisplayHome" class="font-bold text-red-600">₹0</span></p>
-        <p class="text-gray-700 text-lg mb-4">Remaining Daily Balance: <span id="remainingDailyBalanceDisplayHome" class="font-bold text-green-600">₹0</span></p>
+      <section class="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl mb-8 sm:mb-12">
+        <h3 class="text-2xl sm:text-3xl font-bold text-indigo-600 mb-4 sm:mb-6 text-center">Current Financial Status</h3>
+        <p class="text-base sm:text-lg text-gray-700 mb-1 sm:mb-2">Daily Limit: <span id="dailyLimitDisplayHome" class="font-bold text-blue-600">₹0</span></p>
+        <p class="text-base sm:text-lg text-gray-700 mb-1 sm:mb-2">Today's Total Spend: <span id="todaySpendDisplayHome" class="font-bold text-red-600">₹0</span></p>
+        <p class="text-base sm:text-lg text-gray-700 mb-2 sm:mb-4">Remaining Daily Balance: <span id="remainingDailyBalanceDisplayHome" class="font-bold text-green-600">₹0</span></p>
         
-        <hr class="border-gray-200 my-4">
+        <hr class="border-gray-200 my-3 sm:my-4">
 
-        <p class="text-gray-700 text-lg mb-2">Monthly Limit: <span id="monthlyLimitDisplayHome" class="font-bold text-purple-600">₹0</span></p>
-        <p class="text-gray-700 text-lg mb-2">Remaining Monthly Balance: <span id="remainingMonthlyBalanceDisplayHome" class="font-bold text-green-600">₹0</span></p>
-        <p class="text-gray-700 text-lg">Total Monthly Savings: <span id="monthlySavingsDisplayHome" class="font-bold text-emerald-600">₹0</span></p>
+        <p class="text-base sm:text-lg text-gray-700 mb-1 sm:mb-2">Monthly Limit: <span id="monthlyLimitDisplayHome" class="font-bold text-purple-600">₹0</span></p>
+        <p class="text-base sm:text-lg text-gray-700 mb-1 sm:mb-2">Remaining Monthly Balance: <span id="remainingMonthlyBalanceDisplayHome" class="font-bold text-green-600">₹0</span></p>
+        <p class="text-base sm:text-lg text-gray-700">Total Monthly Savings: <span id="monthlySavingsDisplayHome" class="font-bold text-emerald-600">₹0</span></p>
       </section>
 
 
       <!-- Flash Cards -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         <!-- Daily Limit -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer" >
-          <a href= "daily_limit.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📆 Daily Limit</h3></a>
-            <p class="text-gray-600">Set daily limits to better manage daily spending.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer" >
+          <a href= "daily_limit.html"><h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">📆 Daily Limit</h3></a>
+            <p class="text-sm sm:text-base text-gray-600">Set daily limits to better manage daily spending.</p>
         </div>
         <!-- Monthly Limit -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer" >
-          <a href= "monthly_limit.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📅 Monthly Limit</h3></a>
-          <p class="text-gray-600">Plan and track how much you can spend this month.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer" >
+          <a href= "monthly_limit.html"><h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">📅 Monthly Limit</h3></a>
+          <p class="text-sm sm:text-base text-gray-600">Plan and track how much you can spend this month.</p>
         </div>
 
         <!-- Spending Statistics -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
-          <a href= "statistic.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">📊 Spending Statistics</h3></a> <!-- Corrected link -->
-          <p class="text-gray-600">Visualize your expenses with charts and analytics.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer">
+          <a href= "statistics.html"><h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">📊 Spending Statistics</h3></a> <!-- Corrected link -->
+          <p class="text-sm sm:text-base text-gray-600">Visualize your expenses with charts and analytics.</p>
         </div>
 
         <!-- Savings -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
-          <a href= "saving.html"> <h3 class="text-2xl font-semibold mb-2 text-indigo-600">💸 Savings</h3></a>
-          <p class="text-gray-600">Keep track of your monthly savings goals.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer">
+          <a href= "saving.html"> <h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">💸 Savings</h3></a>
+          <p class="text-sm sm:text-base text-gray-600">Keep track of your monthly savings goals.</p>
         </div>
 
         <!-- Monthly Reminders -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
-          <a href= "monthly_reminderr.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">🔔 Monthly Reminders</h3></a> <!-- Corrected link -->
-          <p class="text-gray-600">Get notified about upcoming payments and limits.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer">
+          <a href= "monthly_reminderr.html"><h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">🔔 Monthly Reminders</h3></a> <!-- Corrected link -->
+          <p class="text-sm sm:text-base text-gray-600">Get notified about upcoming payments and limits.</p>
         </div>
 
         <!-- Miscellaneous Spending -->
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
-          <a href= "miscellaneous.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">🧾 Miscellaneous Spends</h3></a> <!-- Corrected link -->
-          <p class="text-gray-600">Log other random expenses that don't fit categories.</p>
+        <div class="card bg-white rounded-3xl p-5 sm:p-6 shadow hover:shadow-xl cursor-pointer">
+          <a href= "miscellaneous.html"><h3 class="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2 text-indigo-600">🧾 Miscellaneous Spends</h3></a> <!-- Corrected link -->
+          <p class="text-sm sm:text-base text-gray-600">Log other random expenses that don't fit categories.</p>
         </div>
-
-        <!-- About Us Card (No longer needed here, link is in header dropdown) -->
-        <!--
-        <div class="card bg-white rounded-3xl p-6 shadow hover:shadow-xl cursor-pointer">
-          <a href= "about.html"><h3 class="text-2xl font-semibold mb-2 text-indigo-600">ℹ️ About Us</h3></a>
-          <p class="text-gray-600">Learn more about the creators and the project.</p>
-        </div>
-        -->
       </section>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="gradient-bg text-white text-center py-5 mt-12 shadow-inner">
-    <p class="text-lg">&copy; 2025 Finance Tracker. All rights reserved.</p>
+  <footer class="gradient-bg text-white text-center py-4 sm:py-5 mt-8 sm:mt-12 shadow-inner">
+    <p class="text-base sm:text-lg">&copy; 2025 Finance Tracker. All rights reserved.</p>
   </footer>
 
   <script>
